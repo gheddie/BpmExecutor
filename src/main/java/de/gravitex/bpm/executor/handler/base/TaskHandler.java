@@ -3,6 +3,7 @@ package de.gravitex.bpm.executor.handler.base;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 
 public class TaskHandler extends ProcessItemHandler<Task> {
@@ -10,7 +11,7 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	private static final Logger logger = Logger.getLogger(TaskHandler.class);
 	
 	@Override
-	public final void handleLifeCycleBegin(Object processItem) {
+	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
 		finishTask(processItem, null);
 	}
 
@@ -21,12 +22,12 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem) {
+	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) {
 		// ...
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem) {
+	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) {
 		// ...
 	}
 

@@ -30,21 +30,21 @@ public class ProcessEngineState {
 		ProcessEngine processEngine = BpmExecutionSingleton.getInstance().getProcessEngine();
 		
 		// tasks
-		for (Task task : processEngine.getTaskService().createTaskQuery().list()) {
+		for (Task task : processEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).list()) {
 			if (processItems.get(Task.class) == null) {
 				processItems.put(Task.class, new HashMap<String, Object>());	
 			}
 			processItems.get(Task.class).put(task.getId(), task);
 		}
 		// jobs
-		for (Job job : processEngine.getManagementService().createJobQuery().list()) {
+		for (Job job : processEngine.getManagementService().createJobQuery().processInstanceId(processInstance.getId()).list()) {
 			if (processItems.get(Job.class) == null) {
 				processItems.put(Job.class, new HashMap<String, Object>());	
 			}
 			processItems.get(Job.class).put(job.getId(), job);
 		}
 		// messages
-		for (EventSubscription eventSubscription : processEngine.getRuntimeService().createEventSubscriptionQuery().list()) {
+		for (EventSubscription eventSubscription : processEngine.getRuntimeService().createEventSubscriptionQuery().processInstanceId(processInstance.getId()).list()) {
 			if (processItems.get(EventSubscription.class) == null) {
 				processItems.put(EventSubscription.class, new HashMap<String, Object>());	
 			}

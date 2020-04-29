@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
@@ -14,7 +15,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	private static final Logger logger = Logger.getLogger(TimerHandler.class);
 
 	@Override
-	public final void handleLifeCycleBegin(Object processItem) {
+	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
 		
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			TimerEntity timer = castProcessItem(processItem);
@@ -24,7 +25,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem) {
+	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) {
 		TimerEntity timer = castProcessItem(processItem);
 		long seconds = ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date());
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isTraceIntermediateLifeCycles()) {
@@ -33,7 +34,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem) throws BpmExecutorException {
+	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			return;
 		}

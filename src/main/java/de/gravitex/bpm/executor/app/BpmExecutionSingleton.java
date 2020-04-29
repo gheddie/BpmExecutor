@@ -1,5 +1,6 @@
 package de.gravitex.bpm.executor.app;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +44,15 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 	
 	private HashMap<String, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<String, ProcessItemHandler<?>>();
-	
-	ProcessEngineState deliveredEngineState = new ProcessEngineState();
 
-	private ProcessInstance processIstance;
+	// process instance id -> process engine state
+	HashMap<String, ProcessEngineState> deliveredEngineStates = new HashMap<String, ProcessEngineState>();
 
-	private String businessKey;
+	// process instance id -> process instance
+	private HashMap<String, ProcessInstance> processInstances = new HashMap<String, ProcessInstance>();
+
+	// process instance id -> business key
+	private HashMap<String, String> businessKeys = new HashMap<String, String>();
 	
 	private BpmExecutionSingleton() {
 		super();
@@ -80,35 +84,27 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	/**
-	 * @deprecated Use {@link #startProcessInstance(String)} instead
-	 */
-	public BpmExecutionSingleton startProcess(String processDefinitionKey) {
-		return startProcessInstance(processDefinitionKey);
-	}
-
-	/**
-	 * @deprecated Use {@link #startProcessInstance(String)} instead
-	 */
-	public BpmExecutionSingleton startProcessInstanc(String processDefinitionKey) {
-		return startProcessInstance(processDefinitionKey);
-	}
-
 	public BpmExecutionSingleton startProcessInstance(String processDefinitionKey) {
-		generateBusinessKey();
-		processIstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
+		String businessKey = generateBusinessKey();
+		ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
+		processInstances.put(processInstance.getId(), processInstance);
+		businessKeys.put(processInstance.getId(), businessKey);
 		return this;
 	}
 
-	private void generateBusinessKey() {
+	private String generateBusinessKey() {
 		String result = UUID.randomUUID().toString();
 		logger.info("generated business key: " + result);
-		businessKey = result;
+		return result;
 	}
 
-	public void deliverEngineState(ProcessEngineState newEngineState) throws BpmExecutorException {
+	public void deliverEngineState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
 		
-		HashMap<Class<?>, DiffContainer> diff = deliveredEngineState.compareTo(newEngineState);
+		ProcessEngineState processEngineState = deliveredEngineStates.get(processInstance.getId());
+		if (processEngineState == null) {
+			processEngineState = new ProcessEngineState();
+		}
+		HashMap<Class<?>, DiffContainer> diff = processEngineState.compareTo(newEngineState);
 		evaluateChanges(diff);
 		DiffContainer diffContainer = null;
 		for (Class<?> clazz : diff.keySet()) {
@@ -123,19 +119,19 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 					// logger.info("handling object: " + handler.format(processItem) + ", diff type: " + lifeCycle);
 					switch (lifeCycle) {
 					case CREATED:
-						handler.handleLifeCycleBegin(processItem);
+						handler.handleLifeCycleBegin(processItem, processInstance);
 						break;
 					case PERSISTENT:
-						handler.handleLifeCycle(processItem);	
+						handler.handleLifeCycle(processItem, processInstance);	
 						break;
 					case REMOVED:
-						handler.handleLifeCycleEnd(processItem);
+						handler.handleLifeCycleEnd(processItem, processInstance);
 						break;
 					}
 				}
 			}
 		}
-		deliveredEngineState = newEngineState;
+		deliveredEngineStates.put(processInstance.getId(), newEngineState);
 	}
 
 	private void evaluateChanges(HashMap<Class<?>, DiffContainer> processItemChanges) {
@@ -180,11 +176,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	@Override
-	public ProcessInstance getProcessInstance() {
-		return processIstance;
-	}
-
-	@Override
 	public boolean processesRunning() {
 		List<ProcessInstance> list = processEngine.getRuntimeService().createProcessInstanceQuery().list();
 		return list.size() > 0;
@@ -198,7 +189,11 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		this.processExecutorSettings = aProcessExecutorSettings;
 	}
 
-	public String getBusinessKey() {
-		return businessKey;
+	public String getBusinessKey(ProcessInstance processInstance) {
+		return businessKeys.get(processInstance.getId());
+	}
+
+	public Collection<ProcessInstance> getProcessInstances() {
+		return processInstances.values();
 	}
 }

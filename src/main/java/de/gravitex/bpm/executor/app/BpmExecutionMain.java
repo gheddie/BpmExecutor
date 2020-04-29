@@ -7,10 +7,13 @@ import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 public class BpmExecutionMain {
 
 	public static void main(String[] args) {
-
 		try {
-			ProcessExecutor.fromValues("SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
-					.withSettings(ProcessExecutorSettings.fromValues(10, false, true)).startProcess();
+			ProcessExecutor processExecutor = ProcessExecutor.fromValues("SimpleTestProcess.bpmn", "SimpleTestProcess")
+					.withSettings(ProcessExecutorSettings.fromValues(10, false, true, 1000))
+					.withCustomHandler("TASK#T1", new TaskT1Handler());
+			processExecutor.startProcess();
+			processExecutor.startProcess();
+			processExecutor.startProcess();
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}

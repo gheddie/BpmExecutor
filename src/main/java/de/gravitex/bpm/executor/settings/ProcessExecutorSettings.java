@@ -10,18 +10,21 @@ public class ProcessExecutorSettings {
 	private boolean fireTimersImmediately;
 
 	private boolean traceIntermediateLifeCycles;
+	
+	private int stepMillis;
 
 	private ProcessExecutorSettings() {
 		super();
 	}
 
 	public static ProcessExecutorSettings fromValues(int anAllowedTimerDivergenceInSeconds, boolean aFireTimersImmediately,
-			boolean aTraceIntermediateLifeCycles) {
+			boolean aTraceIntermediateLifeCycles, int aStepMillis) {
 
 		ProcessExecutorSettings processExecutorSettings = new ProcessExecutorSettings();
 		processExecutorSettings.setAllowedTimerDivergenceInSeconds(anAllowedTimerDivergenceInSeconds);
 		processExecutorSettings.setFireTimersImmediately(aFireTimersImmediately);
 		processExecutorSettings.setTraceIntermediateLifeCycles(aTraceIntermediateLifeCycles);
+		processExecutorSettings.setStepMillis(aStepMillis);
 		return processExecutorSettings;
 	}
 }
