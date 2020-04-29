@@ -41,7 +41,7 @@ public class ProcessExecutor {
 	}
 
 	public void startProcess() {
-		BpmExecutionSingleton.getInstance().startProcess(processDefinitionKey);
+		BpmExecutionSingleton.getInstance().startProcessInstance(processDefinitionKey);
 	}
 
 	public ProcessExecutor withSettings(ProcessExecutorSettings aProcessExecutorSettings) {

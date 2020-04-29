@@ -5,6 +5,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.camunda.bpm.engine.runtime.EventSubscription;
 
+import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+
 public class EventSubscriptionHandler extends ProcessItemHandler<EventSubscription> {
 	
 	private static final Logger logger = Logger.getLogger(EventSubscriptionHandler.class);
@@ -17,11 +19,11 @@ public class EventSubscriptionHandler extends ProcessItemHandler<EventSubscripti
 	@Override
 	public final void handleLifeCycleBegin(Object processItem) {
 		logger.info("handling: " + castProcessItem(processItem).getEventName());
-		correlateMessage(processItem, null);
+		correlateMessage(processItem, BpmExecutionSingleton.getInstance().getBusinessKey(), null);
 	}
 
-	public void correlateMessage(Object processItem, Map<String, Object> variables) {
-		runtimeService().correlateMessage(castProcessItem(processItem).getEventName());
+	public void correlateMessage(Object processItem, String businessKey, Map<String, Object> variables) {
+		runtimeService().correlateMessage(castProcessItem(processItem).getEventName(), businessKey, variables);
 	}
 
 	@Override

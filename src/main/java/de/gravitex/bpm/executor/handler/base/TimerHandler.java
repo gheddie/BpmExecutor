@@ -27,7 +27,9 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	public final void handleLifeCycle(Object processItem) {
 		TimerEntity timer = castProcessItem(processItem);
 		long seconds = ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date());
-		logger.info("handling timer '" + timer.getJobHandlerConfigurationRaw() + "' life cycle --> " + seconds + " seconds to go... ");
+		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isTraceIntermediateLifeCycles()) {
+			logger.info("handling timer '" + timer.getJobHandlerConfigurationRaw() + "' life cycle --> " + seconds + " seconds to go... ");			
+		}
 	}
 
 	@Override

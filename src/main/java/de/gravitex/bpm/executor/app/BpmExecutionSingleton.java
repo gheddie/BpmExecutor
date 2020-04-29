@@ -2,6 +2,8 @@ package de.gravitex.bpm.executor.app;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.camunda.bpm.engine.ProcessEngine;
@@ -45,6 +47,8 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	ProcessEngineState deliveredEngineState = new ProcessEngineState();
 
 	private ProcessInstance processIstance;
+
+	private String businessKey;
 	
 	private BpmExecutionSingleton() {
 		super();
@@ -76,9 +80,30 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
+	/**
+	 * @deprecated Use {@link #startProcessInstance(String)} instead
+	 */
 	public BpmExecutionSingleton startProcess(String processDefinitionKey) {
-		processIstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey);
+		return startProcessInstance(processDefinitionKey);
+	}
+
+	/**
+	 * @deprecated Use {@link #startProcessInstance(String)} instead
+	 */
+	public BpmExecutionSingleton startProcessInstanc(String processDefinitionKey) {
+		return startProcessInstance(processDefinitionKey);
+	}
+
+	public BpmExecutionSingleton startProcessInstance(String processDefinitionKey) {
+		generateBusinessKey();
+		processIstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
 		return this;
+	}
+
+	private void generateBusinessKey() {
+		String result = UUID.randomUUID().toString();
+		logger.info("generated business key: " + result);
+		businessKey = result;
 	}
 
 	public void deliverEngineState(ProcessEngineState newEngineState) throws BpmExecutorException {
@@ -171,5 +196,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	
 	public void setProcessExecutorSettings(ProcessExecutorSettings aProcessExecutorSettings) {
 		this.processExecutorSettings = aProcessExecutorSettings;
+	}
+
+	public String getBusinessKey() {
+		return businessKey;
 	}
 }
