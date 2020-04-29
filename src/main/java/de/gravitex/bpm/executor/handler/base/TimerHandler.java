@@ -31,12 +31,19 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem) {
+	public final void handleLifeCycleEnd(Object processItem) throws BpmExecutorException {
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			return;
 		}
 		long dateDiffInSecondsFromTarget = Math.abs(ProcessUtil.getDateDiffInSeconds(castProcessItem(processItem).getDuedate(), new Date()));
-		// throw new BpmExecutorException("", null);
+		int allowedTimerDivergenceInSeconds = Math
+				.abs(BpmExecutionSingleton.getInstance().getProcessExecutorSettings().getAllowedTimerDivergenceInSeconds());
+		if (allowedTimerDivergenceInSeconds > 0 && dateDiffInSecondsFromTarget > allowedTimerDivergenceInSeconds) {
+			throw new BpmExecutorException(
+					"timer '" + castProcessItem(processItem).getJobHandlerConfigurationRaw() + "' fired inaccurate (allowed="
+							+ allowedTimerDivergenceInSeconds + ", actual=" + dateDiffInSecondsFromTarget + " seconds)!!",
+					null);
+		}
 		logger.info("timer " + castProcessItem(processItem).getJobHandlerConfigurationRaw() + " has reached due date ("
 				+ dateDiffInSecondsFromTarget + " seconds from target date).");
 	}

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ProcessExecutorSettings {
 
-	private int allowedTimerDivergenceInMinutes;
+	private int allowedTimerDivergenceInSeconds;
 
 	private boolean fireTimersImmediately;
 
@@ -13,10 +13,10 @@ public class ProcessExecutorSettings {
 		super();
 	}
 
-	public static ProcessExecutorSettings fromValues(int anAllowedTimerDivergenceInMinutes, boolean aFireTimersImmediately) {
+	public static ProcessExecutorSettings fromValues(int anAllowedTimerDivergenceInSeconds, boolean aFireTimersImmediately) {
 
 		ProcessExecutorSettings processExecutorSettings = new ProcessExecutorSettings();
-		processExecutorSettings.setAllowedTimerDivergenceInMinutes(anAllowedTimerDivergenceInMinutes);
+		processExecutorSettings.setAllowedTimerDivergenceInSeconds(anAllowedTimerDivergenceInSeconds);
 		processExecutorSettings.setFireTimersImmediately(aFireTimersImmediately);
 		return processExecutorSettings;
 	}

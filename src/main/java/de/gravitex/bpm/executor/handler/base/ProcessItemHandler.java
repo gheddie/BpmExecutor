@@ -18,11 +18,11 @@ public abstract class ProcessItemHandler<T> {
 
 	protected abstract T castProcessItem(Object processItem);
 	
-	public abstract void handleLifeCycleBegin(Object processItem);
+	public abstract void handleLifeCycleBegin(Object processItem) throws BpmExecutorException;
 
-	public abstract void handleLifeCycle(Object processItem);
+	public abstract void handleLifeCycle(Object processItem) throws BpmExecutorException;
 
-	public abstract void handleLifeCycleEnd(Object processItem);
+	public abstract void handleLifeCycleEnd(Object processItem) throws BpmExecutorException;
 	
 	// ------------------------------------------------------------------------------------
 	// --------- services

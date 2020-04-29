@@ -10,7 +10,7 @@ public class BpmExecutionMain {
 
 		try {
 			ProcessExecutor.fromValues("SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
-					.withSettings(ProcessExecutorSettings.fromValues(1, false)).startProcess();
+					.withSettings(ProcessExecutorSettings.fromValues(10, false)).startProcess();
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}
