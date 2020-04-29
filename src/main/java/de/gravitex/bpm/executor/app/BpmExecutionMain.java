@@ -14,6 +14,7 @@ public class BpmExecutionMain {
 			processExecutor.startProcess();
 			processExecutor.startProcess();
 			processExecutor.startProcess();
+			processExecutor.startProcess();
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}
