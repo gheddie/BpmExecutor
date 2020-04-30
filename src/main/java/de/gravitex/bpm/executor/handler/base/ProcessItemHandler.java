@@ -63,4 +63,8 @@ public abstract class ProcessItemHandler<T> {
 	protected String formatForProcessInstance(String message, ProcessInstance processIstance) {
 		return BpmExecutionSingleton.getInstance().formatForProcessInstance(message, processIstance);
 	}
+	
+	protected void invokeProcessStateChecker(T finishedProcessItem) {
+		BpmExecutionSingleton.getInstance().invokeProcessStateChecker(finishedProcessItem);
+	}
 }

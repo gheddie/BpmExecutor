@@ -21,6 +21,7 @@ public class EventSubscriptionHandler extends ProcessItemHandler<EventSubscripti
 	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
 		logger.info(formatForProcessInstance("handling: " + castProcessItem(processItem).getEventName(), processInstance));
 		correlateMessage(processItem, BpmExecutionSingleton.getInstance().getBusinessKey(processInstance), null);
+		invokeProcessStateChecker(castProcessItem(processItem));
 	}
 
 	public void correlateMessage(Object processItem, String businessKey, Map<String, Object> variables) {

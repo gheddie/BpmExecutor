@@ -197,4 +197,8 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	public Collection<ProcessInstance> getProcessInstances() {
 		return processInstances.values();
 	}
+
+	public void invokeProcessStateChecker(Object finishedProcessItem) {
+		logger.info("invoking process state checker for item '" + ProcessItemFormatter.getKey(finishedProcessItem) + "'...");
+	}
 }

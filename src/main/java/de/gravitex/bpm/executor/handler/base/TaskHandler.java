@@ -13,6 +13,7 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	@Override
 	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
 		finishTask(processItem, null, processInstance);
+		invokeProcessStateChecker(castProcessItem(processItem));
 	}
 
 	public void finishTask(Object processItem, Map<String, Object> variables, ProcessInstance processInstance) {
