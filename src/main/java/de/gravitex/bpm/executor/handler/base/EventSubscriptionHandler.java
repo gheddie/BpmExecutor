@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.runtime.EventSubscription;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
 public class EventSubscriptionHandler extends ProcessItemHandler<EventSubscription> {
 	
@@ -18,7 +19,7 @@ public class EventSubscriptionHandler extends ProcessItemHandler<EventSubscripti
 	}
 
 	@Override
-	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		logger.info(formatForProcessInstance("handling: " + castProcessItem(processItem).getEventName(), processInstance));
 		correlateMessage(processItem, BpmExecutionSingleton.getInstance().getBusinessKey(processInstance), null);
 		invokeProcessStateChecker(castProcessItem(processItem));
@@ -29,12 +30,12 @@ public class EventSubscriptionHandler extends ProcessItemHandler<EventSubscripti
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		// TODO Auto-generated method stub
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		// TODO Auto-generated method stub
 	}
 }

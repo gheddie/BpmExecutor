@@ -6,12 +6,14 @@ import org.apache.log4j.Logger;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 
+import de.gravitex.bpm.executor.exception.BpmExecutorException;
+
 public class TaskHandler extends ProcessItemHandler<Task> {
 	
 	private static final Logger logger = Logger.getLogger(TaskHandler.class);
 	
 	@Override
-	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		finishTask(processItem, null, processInstance);
 		invokeProcessStateChecker(castProcessItem(processItem));
 	}
@@ -23,12 +25,12 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		// ...
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		// ...
 	}
 

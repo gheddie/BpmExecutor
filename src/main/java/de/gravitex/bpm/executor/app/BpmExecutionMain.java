@@ -11,8 +11,8 @@ public class BpmExecutionMain {
 			ProcessExecutor processExecutor = ProcessExecutor.create().addDeployment("SimpleTestProcess.bpmn")
 					.addDeployment("AnotherProcess.bpmn").withSettings(ProcessExecutorSettings.fromValues(10, false, true, 1000))
 					.withCustomHandler("TASK#T1", new TaskT1Handler());
-			processExecutor.startProcess("SimpleTestProcess", 2);
-			processExecutor.startProcess("AnotherProcess", 5);
+			// processExecutor.startProcess("SimpleTestProcess", 2);
+			processExecutor.startProcess("AnotherProcess", 1);
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}

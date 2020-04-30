@@ -15,7 +15,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	private static final Logger logger = Logger.getLogger(TimerHandler.class);
 
 	@Override
-	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			TimerEntity timer = castProcessItem(processItem);
@@ -26,7 +26,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) {
+	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		TimerEntity timer = castProcessItem(processItem);
 		long seconds = ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date());
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isTraceIntermediateLifeCycles()) {

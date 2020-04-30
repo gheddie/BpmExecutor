@@ -41,7 +41,7 @@ public abstract class ProcessItemHandler<T> {
 		return BpmExecutionSingleton.getInstance().formatForProcessInstance(message, processIstance);
 	}
 	
-	protected void invokeProcessStateChecker(T finishedProcessItem) {
+	protected void invokeProcessStateChecker(T finishedProcessItem) throws BpmExecutorException {
 		BpmExecutionSingleton.getInstance().invokeProcessStateChecker(finishedProcessItem);
 	}
 }
