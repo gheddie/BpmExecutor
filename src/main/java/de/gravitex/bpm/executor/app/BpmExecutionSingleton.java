@@ -18,7 +18,7 @@ import de.gravitex.bpm.executor.enumeration.LifeCycle;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.EventSubscriptionHandler;
 import de.gravitex.bpm.executor.handler.base.ProcessItemHandler;
-import de.gravitex.bpm.executor.handler.base.ProcessItemHandlerKey;
+import de.gravitex.bpm.executor.handler.base.ProcessItemKey;
 import de.gravitex.bpm.executor.handler.base.TaskHandler;
 import de.gravitex.bpm.executor.handler.base.TimerHandler;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
@@ -44,7 +44,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		defaultProcessItemHandlers.put(EventSubscriptionEntity.class, new EventSubscriptionHandler());
 	}
 	
-	private HashMap<ProcessItemHandlerKey, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<ProcessItemHandlerKey, ProcessItemHandler<?>>();
+	private HashMap<ProcessItemKey, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<ProcessItemKey, ProcessItemHandler<?>>();
 
 	// process instance id -> process engine state
 	HashMap<String, ProcessEngineState> deliveredEngineStates = new HashMap<String, ProcessEngineState>();
@@ -55,7 +55,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	// process instance id -> business key
 	private HashMap<String, String> businessKeys = new HashMap<String, String>();
 
-	private HashMap<String, BpmStateChecker> bpmStateCheckers = new HashMap<String, BpmStateChecker>();
+	private HashMap<ProcessItemKey, BpmStateChecker> bpmStateCheckers = new HashMap<ProcessItemKey, BpmStateChecker>();
 	
 	private BpmExecutionSingleton() {
 		super();
@@ -152,7 +152,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 
 	private ProcessItemHandler<?> getItemHandler(Object processItem, ProcessInstance processInstance) {
 		String itemKey = ProcessItemFormatter.getKey(processItem);
-		ProcessItemHandlerKey handlerKey = ProcessItemHandlerKey.fromValues(itemKey, processInstance.getProcessDefinitionId());
+		ProcessItemKey handlerKey = ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId());
 		ProcessItemHandler<?> customHandler = customProcessItemHandlers.get(handlerKey);
 		if (customHandler != null) {
 			return customHandler;
@@ -173,12 +173,12 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	public BpmExecutionSingleton registerHandler(String processDefinitionKey, String itemKey, ProcessItemHandler<?> handler) {
-		customProcessItemHandlers.put(ProcessItemHandlerKey.fromValues(itemKey, processDefinitionKey), handler);
+		customProcessItemHandlers.put(ProcessItemKey.fromValues(itemKey, processDefinitionKey), handler);
 		return instance;
 	}
 	
-	public BpmExecutionSingleton registerChecker(String key, BpmStateChecker bpmStateChecker) {
-		bpmStateCheckers.put(key, bpmStateChecker);
+	public BpmExecutionSingleton registerChecker(String processDefinitionKey, String itemKey, BpmStateChecker bpmStateChecker) {
+		bpmStateCheckers.put(ProcessItemKey.fromValues(itemKey, processDefinitionKey), bpmStateChecker);
 		return instance;
 	}
 
@@ -208,14 +208,14 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return processInstances.values();
 	}
 
-	public void invokeProcessStateChecker(Object finishedProcessItem) throws BpmExecutorException {
-		String key = ProcessItemFormatter.getKey(finishedProcessItem);
-		logger.info("invoking process state checker for item '" + key + "'...");
-		BpmStateChecker bpmStateChecker = bpmStateCheckers.get(key);
+	public void invokeProcessStateChecker(Object finishedProcessItem, ProcessInstance processInstance) throws BpmExecutorException {
+		String itemKey = ProcessItemFormatter.getKey(finishedProcessItem);
+		logger.info("invoking process state checker for item '" + itemKey + "'...");
+		BpmStateChecker bpmStateChecker = bpmStateCheckers.get(ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId()));
 		if (bpmStateChecker != null) {
 			bpmStateChecker.checkState();			
 		} else {
-			logger.info("no bpm state checker found for key '" + key + "'...");
+			logger.info("no bpm state checker found for key '" + itemKey + "'...");
 		}
 	}
 }

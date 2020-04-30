@@ -15,7 +15,7 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	@Override
 	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		finishTask(processItem, null, processInstance);
-		invokeProcessStateChecker(castProcessItem(processItem));
+		invokeProcessStateChecker(castProcessItem(processItem), processInstance);
 	}
 
 	public void finishTask(Object processItem, Map<String, Object> variables, ProcessInstance processInstance) {

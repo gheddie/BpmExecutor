@@ -21,7 +21,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 			TimerEntity timer = castProcessItem(processItem);
 			managementService().executeJob(timer.getId());
 			logger.info("fired timer '" + timer.getJobHandlerConfigurationRaw() + "' immediately (fot given settings)...");
-			invokeProcessStateChecker(castProcessItem(processItem));
+			invokeProcessStateChecker(castProcessItem(processItem), processInstance);
 		}
 	}
 
@@ -50,7 +50,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 		}
 		logger.info("timer " + castProcessItem(processItem).getJobHandlerConfigurationRaw() + " has reached due date ("
 				+ dateDiffInSecondsFromTarget + " seconds from target date).");
-		invokeProcessStateChecker(castProcessItem(processItem));
+		invokeProcessStateChecker(castProcessItem(processItem), processInstance);
 	}
 
 	@Override

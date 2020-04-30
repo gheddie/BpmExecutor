@@ -3,21 +3,21 @@ package de.gravitex.bpm.executor.handler.base;
 import lombok.Data;
 
 @Data
-public class ProcessItemHandlerKey {
+public class ProcessItemKey {
 
 	private String itemKey;
 	
 	private String processDefinitionKey;
 	
-	private ProcessItemHandlerKey() {
+	private ProcessItemKey() {
 		super();
 	}
 	
-	public static ProcessItemHandlerKey fromValues(String anItemKey, String aProcessDefinitionKey) {
-		ProcessItemHandlerKey processItemHandlerKey = new ProcessItemHandlerKey();
-		processItemHandlerKey.setItemKey(anItemKey);
-		processItemHandlerKey.setProcessDefinitionKey(format(aProcessDefinitionKey));
-		return processItemHandlerKey;
+	public static ProcessItemKey fromValues(String anItemKey, String aProcessDefinitionKey) {
+		ProcessItemKey processItemKey = new ProcessItemKey();
+		processItemKey.setItemKey(anItemKey);
+		processItemKey.setProcessDefinitionKey(format(aProcessDefinitionKey));
+		return processItemKey;
 	}
 
 	private static String format(String aProcessDefinitionKey) {

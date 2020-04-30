@@ -13,21 +13,21 @@ public class ProcessExecutor {
 		super();
 	}
 
-	public ProcessExecutor withCustomHandler(String processDefinitionKey, String handlerKey, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
+	public ProcessExecutor withCustomHandler(String processDefinitionKey, String itemKey, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
 		
 		if (processItemHandler == null) {
 			throw new BpmExecutorException("cannot set a [NULL] custom handler!!", null);
 		}
-		BpmExecutionSingleton.getInstance().registerHandler(processDefinitionKey, handlerKey, processItemHandler);
+		BpmExecutionSingleton.getInstance().registerHandler(processDefinitionKey, itemKey, processItemHandler);
 		return this;
 	}
 	
-	public ProcessExecutor withBpmStateChecker(String key, BpmStateChecker bpmStateChecker) throws BpmExecutorException {
+	public ProcessExecutor withBpmStateChecker(String processDefinitionKey, String itemKey, BpmStateChecker bpmStateChecker) throws BpmExecutorException {
 		
 		if (bpmStateChecker == null) {
 			throw new BpmExecutorException("cannot set a [NULL] state checker!!", null);
 		}
-		BpmExecutionSingleton.getInstance().registerChecker(key, bpmStateChecker);
+		BpmExecutionSingleton.getInstance().registerChecker(processDefinitionKey, itemKey, bpmStateChecker);
 		return this;
 	}
 
