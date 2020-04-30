@@ -12,7 +12,7 @@ public class TaskT1Handler extends TaskHandler {
 	@Override
 	public void finishTask(Object processItem, Map<String, Object> variables, ProcessInstance processInstance) {
 		Map<String, Object> myVariables = new HashMap<String, Object>();
-		myVariables.put("value", "T1");
+		myVariables.put("value", "T2");
 		super.finishTask(processItem, myVariables, processInstance);
 	}
 }

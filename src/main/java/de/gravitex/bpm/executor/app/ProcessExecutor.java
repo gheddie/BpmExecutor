@@ -1,5 +1,6 @@
 package de.gravitex.bpm.executor.app;
 
+import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.ProcessItemHandler;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
@@ -18,6 +19,15 @@ public class ProcessExecutor {
 			throw new BpmExecutorException("cannot set a [NULL] custom handler!!", null);
 		}
 		BpmExecutionSingleton.getInstance().registerHandler(key, processItemHandler);
+		return this;
+	}
+	
+	public ProcessExecutor withBpmStateChecker(String key, BpmStateChecker bpmStateChecker) throws BpmExecutorException {
+		
+		if (bpmStateChecker == null) {
+			throw new BpmExecutorException("cannot set a [NULL] state checker!!", null);
+		}
+		BpmExecutionSingleton.getInstance().registerChecker(key, bpmStateChecker);
 		return this;
 	}
 

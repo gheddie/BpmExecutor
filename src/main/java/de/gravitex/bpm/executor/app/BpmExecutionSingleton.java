@@ -13,7 +13,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
-import de.gravitex.bpm.executor.checker.BpmStateChecker;
+import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.enumeration.LifeCycle;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.EventSubscriptionHandler;
@@ -170,8 +170,13 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		System.exit(0);
 	}
 
-	public BpmExecutionSingleton registerHandler(String key, ProcessItemHandler<?> value) {
-		customProcessItemHandlers.put(key, value);
+	public BpmExecutionSingleton registerHandler(String key, ProcessItemHandler<?> handler) {
+		customProcessItemHandlers.put(key, handler);
+		return instance;
+	}
+	
+	public BpmExecutionSingleton registerChecker(String key, BpmStateChecker bpmStateChecker) {
+		bpmStateCheckers.put(key, bpmStateChecker);
 		return instance;
 	}
 
