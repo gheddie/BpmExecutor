@@ -18,6 +18,7 @@ import de.gravitex.bpm.executor.enumeration.LifeCycle;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.EventSubscriptionHandler;
 import de.gravitex.bpm.executor.handler.base.ProcessItemHandler;
+import de.gravitex.bpm.executor.handler.base.ProcessItemHandlerKey;
 import de.gravitex.bpm.executor.handler.base.TaskHandler;
 import de.gravitex.bpm.executor.handler.base.TimerHandler;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
@@ -43,7 +44,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		defaultProcessItemHandlers.put(EventSubscriptionEntity.class, new EventSubscriptionHandler());
 	}
 	
-	private HashMap<String, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<String, ProcessItemHandler<?>>();
+	private HashMap<ProcessItemHandlerKey, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<ProcessItemHandlerKey, ProcessItemHandler<?>>();
 
 	// process instance id -> process engine state
 	HashMap<String, ProcessEngineState> deliveredEngineStates = new HashMap<String, ProcessEngineState>();
@@ -110,7 +111,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 			diffContainer = diff.get(clazz);
 			for (LifeCycle lifeCycle : diffContainer.getItems().keySet()) {
 				for (Object processItem : diffContainer.getItems().get(lifeCycle)) {
-					ProcessItemHandler<?> handler = getItemHandler(processItem);
+					ProcessItemHandler<?> handler = getItemHandler(processItem, processInstance);
 					if (handler == null) {
 						throw new BpmExecutorException(
 								"no handler found for process item type: " + processItem.getClass().getCanonicalName(), null);
@@ -149,9 +150,10 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return "[" + processInstance.getProcessDefinitionId() + " --> ID=" + processInstance.getId() + " --> "+processInstanceState+"] " + message;
 	}
 
-	private ProcessItemHandler<?> getItemHandler(Object processItem) {
-		String key = ProcessItemFormatter.getKey(processItem);
-		ProcessItemHandler<?> customHandler = customProcessItemHandlers.get(key);
+	private ProcessItemHandler<?> getItemHandler(Object processItem, ProcessInstance processInstance) {
+		String itemKey = ProcessItemFormatter.getKey(processItem);
+		ProcessItemHandlerKey handlerKey = ProcessItemHandlerKey.fromValues(itemKey, processInstance.getProcessDefinitionId());
+		ProcessItemHandler<?> customHandler = customProcessItemHandlers.get(handlerKey);
 		if (customHandler != null) {
 			return customHandler;
 		}
@@ -170,8 +172,8 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		System.exit(0);
 	}
 
-	public BpmExecutionSingleton registerHandler(String key, ProcessItemHandler<?> handler) {
-		customProcessItemHandlers.put(key, handler);
+	public BpmExecutionSingleton registerHandler(String processDefinitionKey, String itemKey, ProcessItemHandler<?> handler) {
+		customProcessItemHandlers.put(ProcessItemHandlerKey.fromValues(itemKey, processDefinitionKey), handler);
 		return instance;
 	}
 	

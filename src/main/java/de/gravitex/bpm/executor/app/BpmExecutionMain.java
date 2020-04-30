@@ -11,10 +11,10 @@ public class BpmExecutionMain {
 		try {
 			ProcessExecutor processExecutor = ProcessExecutor.create().addDeployment("SimpleTestProcess.bpmn")
 					.addDeployment("AnotherProcess.bpmn").withSettings(ProcessExecutorSettings.fromValues(10, false, false, 1000))
-					.withCustomHandler("TASK#T1", new TaskT1Handler())
+					.withCustomHandler("SimpleTestProcess", "TASK#T1", new TaskT1Handler())
 					.withBpmStateChecker("TASK#TX", new TaskTxBpmChecker());
-			processExecutor.startProcess("SimpleTestProcess", 1);
-			// processExecutor.startProcess("AnotherProcess", 1);
+			processExecutor.startProcess("SimpleTestProcess", 5);
+			processExecutor.startProcess("AnotherProcess", 2);
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}

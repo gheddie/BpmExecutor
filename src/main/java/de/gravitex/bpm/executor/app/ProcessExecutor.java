@@ -13,12 +13,12 @@ public class ProcessExecutor {
 		super();
 	}
 
-	public ProcessExecutor withCustomHandler(String key, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
+	public ProcessExecutor withCustomHandler(String processDefinitionKey, String handlerKey, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
 		
 		if (processItemHandler == null) {
 			throw new BpmExecutorException("cannot set a [NULL] custom handler!!", null);
 		}
-		BpmExecutionSingleton.getInstance().registerHandler(key, processItemHandler);
+		BpmExecutionSingleton.getInstance().registerHandler(processDefinitionKey, handlerKey, processItemHandler);
 		return this;
 	}
 	
