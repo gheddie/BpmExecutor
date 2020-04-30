@@ -3,7 +3,6 @@ package de.gravitex.bpm.executor.app;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -84,18 +83,15 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public BpmExecutionSingleton startProcessInstance(String processDefinitionKey) {
-		String businessKey = generateBusinessKey();
-		ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
-		processInstances.put(processInstance.getId(), processInstance);
-		businessKeys.put(processInstance.getId(), businessKey);
+	public BpmExecutionSingleton startProcessInstance(String processDefinitionKey, int count) {
+		for (int i=0;i<count;i++) {
+			String businessKey = UUID.randomUUID().toString();
+			ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
+			logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));
+			processInstances.put(processInstance.getId(), processInstance);
+			businessKeys.put(processInstance.getId(), businessKey);			
+		}
 		return this;
-	}
-
-	private String generateBusinessKey() {
-		String result = UUID.randomUUID().toString();
-		logger.info("generated business key: " + result);
-		return result;
 	}
 
 	public void deliverEngineState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
@@ -105,7 +101,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 			processEngineState = new ProcessEngineState();
 		}
 		HashMap<Class<?>, DiffContainer> diff = processEngineState.compareTo(newEngineState);
-		evaluateChanges(diff);
+		evaluateChanges(diff, processInstance);
 		DiffContainer diffContainer = null;
 		for (Class<?> clazz : diff.keySet()) {
 			diffContainer = diff.get(clazz);
@@ -134,15 +130,20 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		deliveredEngineStates.put(processInstance.getId(), newEngineState);
 	}
 
-	private void evaluateChanges(HashMap<Class<?>, DiffContainer> processItemChanges) {
+	private void evaluateChanges(HashMap<Class<?>, DiffContainer> processItemChanges, ProcessInstance processInstance) {
 		
 		int changeCount = 0;
 		for (Class<?> key : processItemChanges.keySet()) {
 			changeCount += processItemChanges.get(key).getChangeCount();
 		}
 		if (changeCount == 0) {
-			logger.warn("NO changes detected!!");
+			logger.warn(formatForProcessInstance("NO changes detected!!", processInstance));
 		}
+	}
+
+	public String formatForProcessInstance(String message, ProcessInstance processInstance) {
+		String processInstanceState = processInstance.isEnded() ? "ENDED" : "ACTIVE";
+		return "[" + processInstance.getProcessDefinitionId() + " --> ID=" + processInstance.getId() + " --> "+processInstanceState+"] " + message;
 	}
 
 	private ProcessItemHandler<?> getItemHandler(Object processItem) {

@@ -8,27 +8,8 @@ import lombok.Data;
 @Data
 public class ProcessExecutor {
 	
-	private String bpmnFileName;
-	
-	private String processDefinitionKey;
-
 	private ProcessExecutor() {
 		super();
-	}
-
-	public static ProcessExecutor fromValues(String aBpmnFileName, String aProcessDefinitionKey) throws BpmExecutorException {
-		
-		if (aBpmnFileName == null || aBpmnFileName.length() == 0) {
-			throw new BpmExecutorException("bpmn file must be set!!", null);
-		}
-		if (aProcessDefinitionKey == null || aProcessDefinitionKey.length() == 0) {
-			throw new BpmExecutorException("process definition key must be set!!", null);
-		}
-		ProcessExecutor processExecutor = new ProcessExecutor();
-		processExecutor.setBpmnFileName(aBpmnFileName);
-		processExecutor.setProcessDefinitionKey(aProcessDefinitionKey);
-		BpmExecutionSingleton.getInstance().deployProcess(aBpmnFileName);
-		return processExecutor;
 	}
 
 	public ProcessExecutor withCustomHandler(String key, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
@@ -40,12 +21,21 @@ public class ProcessExecutor {
 		return this;
 	}
 
-	public void startProcess() {
-		BpmExecutionSingleton.getInstance().startProcessInstance(processDefinitionKey);
+	public void startProcess(String processDefinitionKey, int count) {
+		BpmExecutionSingleton.getInstance().startProcessInstance(processDefinitionKey, count);
 	}
 
 	public ProcessExecutor withSettings(ProcessExecutorSettings aProcessExecutorSettings) {
 		BpmExecutionSingleton.getInstance().setProcessExecutorSettings(aProcessExecutorSettings);
 		return this;
+	}
+
+	public ProcessExecutor addDeployment(String bpmnFileName) {
+		BpmExecutionSingleton.getInstance().deployProcess(bpmnFileName);
+		return this;
+	}
+
+	public static ProcessExecutor create() {
+		return new ProcessExecutor();
 	}
 }

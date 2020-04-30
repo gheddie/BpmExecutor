@@ -59,4 +59,8 @@ public abstract class ProcessItemHandler<T> {
 			throw new BpmExecutorException("invalid count for task [" + processCount + "]!!", null);			
 		}
 	}
+	
+	protected String formatForProcessInstance(String message, ProcessInstance processIstance) {
+		return BpmExecutionSingleton.getInstance().formatForProcessInstance(message, processIstance);
+	}
 }

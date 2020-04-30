@@ -2,7 +2,6 @@ package de.gravitex.bpm.executor.app;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.runtime.EventSubscription;

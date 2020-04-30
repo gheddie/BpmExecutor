@@ -8,13 +8,11 @@ public class BpmExecutionMain {
 
 	public static void main(String[] args) {
 		try {
-			ProcessExecutor processExecutor = ProcessExecutor.fromValues("SimpleTestProcess.bpmn", "SimpleTestProcess")
-					.withSettings(ProcessExecutorSettings.fromValues(10, false, true, 1000))
+			ProcessExecutor processExecutor = ProcessExecutor.create().addDeployment("SimpleTestProcess.bpmn")
+					.addDeployment("AnotherProcess.bpmn").withSettings(ProcessExecutorSettings.fromValues(10, false, true, 1000))
 					.withCustomHandler("TASK#T1", new TaskT1Handler());
-			processExecutor.startProcess();
-			processExecutor.startProcess();
-			processExecutor.startProcess();
-			processExecutor.startProcess();
+			processExecutor.startProcess("SimpleTestProcess", 2);
+			processExecutor.startProcess("AnotherProcess", 5);
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}

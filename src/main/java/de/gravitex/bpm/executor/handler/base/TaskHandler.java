@@ -12,13 +12,13 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	
 	@Override
 	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) {
-		finishTask(processItem, null);
+		finishTask(processItem, null, processInstance);
 	}
 
-	public void finishTask(Object processItem, Map<String, Object> variables) {
+	public void finishTask(Object processItem, Map<String, Object> variables, ProcessInstance processInstance) {
 		Task task = castProcessItem(processItem);
 		taskService().complete(task.getId(), variables);
-		logger.info("finished task: " + task.getName() + " [ID=" + task.getId() + "]...");
+		logger.info(formatForProcessInstance("finished task: " + task.getName() + " [ID=" + task.getId() + "]...", processInstance));
 	}
 
 	@Override
