@@ -2,9 +2,11 @@ package de.gravitex.bpm.executor.checker.base;
 
 import java.util.List;
 
+import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.ManagementService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 
@@ -36,7 +38,7 @@ public abstract class BpmStateChecker {
 		return this;
 	}
 	
-	public BpmStateChecker assertWaitingAt(String activityId) throws BpmExecutorException {
+	protected BpmStateChecker assertWaitingAt(String activityId) throws BpmExecutorException {
 		List<String> waitingActivityIds = runtimeService().getActiveActivityIds(getProcessInstance().getId());
 		if (!waitingActivityIds.contains(activityId)) {
 			throw new BpmExecutorException(
@@ -47,7 +49,21 @@ public abstract class BpmStateChecker {
 		return this;
 	}
 	
+	protected BpmStateChecker assertExecutionEnded() throws BpmExecutorException {
+		HistoricProcessInstance historicProcessInstance = historyService().createHistoricProcessInstanceQuery().processInstanceId(getProcessInstance().getId()).singleResult();
+		boolean ended = historicProcessInstance != null;
+		if (!ended) {
+			throw new BpmExecutorException("process instance [" + getProcessInstance().getId() + "] should be ended, but it is not" + "!!",
+					null);
+		}
+		return this;
+	}
+	
 	// --- services
+	
+	private HistoryService historyService() {
+		return BpmExecutionSingleton.getInstance().getProcessEngine().getHistoryService();
+	}
 	
 	private TaskService taskService() {
 		return BpmExecutionSingleton.getInstance().getProcessEngine().getTaskService();
