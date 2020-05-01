@@ -213,7 +213,8 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		logger.info("invoking process state checker for item '" + itemKey + "'...");
 		BpmStateChecker bpmStateChecker = bpmStateCheckers.get(ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId()));
 		if (bpmStateChecker != null) {
-			bpmStateChecker.checkState();			
+			bpmStateChecker.setProcessInstance(processInstance);
+			bpmStateChecker.checkState(processInstance);
 		} else {
 			logger.info("no bpm state checker found for key '" + itemKey + "'...");
 		}

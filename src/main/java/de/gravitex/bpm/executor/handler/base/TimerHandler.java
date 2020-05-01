@@ -20,7 +20,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			TimerEntity timer = castProcessItem(processItem);
 			managementService().executeJob(timer.getId());
-			logger.info("fired timer '" + timer.getJobHandlerConfigurationRaw() + "' immediately (fot given settings)...");
+			logger.info("fired timer '" + timer.getJobHandlerConfigurationRaw() + "' immediately (for given settings)...");
 			invokeProcessStateChecker(castProcessItem(processItem), processInstance);
 		}
 	}
