@@ -16,16 +16,35 @@ import lombok.Data;
 public abstract class BpmStateChecker {
 	
 	private ProcessInstance processInstance;
+	
+	public void checkStateBeforeExecution(ProcessInstance processInstance) throws BpmExecutorException {
+		// ...
+	}
 
-	public abstract void checkState(ProcessInstance processInstance) throws BpmExecutorException;
+	public void checkStateAfterExecution(ProcessInstance processInstance) throws BpmExecutorException {
+		// ...
+	}
 	
 	// --- asserts
 	
-	protected void assertTaskPresent(String taskName, int taskCount) throws BpmExecutorException {
-		List<Task> taskList = taskService().createTaskQuery().processInstanceId(getProcessInstance().getId()).list();
-		if (!(taskList.size() == taskCount)) {
-			throw new BpmExecutorException("task is not present at count ["+taskCount+"]!!", null);
+	protected BpmStateChecker assertTaskPresent(String taskDefinitionKey) throws BpmExecutorException {
+		List<Task> moo = taskService().createTaskQuery().processInstanceId(getProcessInstance().getId()).list();
+		Task task = taskService().createTaskQuery().processInstanceId(getProcessInstance().getId()).taskDefinitionKey(taskDefinitionKey).singleResult();
+		if (task == null) {
+			throw new BpmExecutorException("task " + taskDefinitionKey + " is not present!!", null);
 		}
+		return this;
+	}
+	
+	public BpmStateChecker assertWaitingAt(String activityId) throws BpmExecutorException {
+		List<String> waitingActivityIds = runtimeService().getActiveActivityIds(getProcessInstance().getId());
+		if (!waitingActivityIds.contains(activityId)) {
+			throw new BpmExecutorException(
+					"process instance [" + getProcessInstance().getId() + "] should be waiting at '" + activityId
+							+ "' but it is not (only at [" + waitingActivityIds + "])!!",
+					null);	
+		}
+		return this;
 	}
 	
 	// --- services

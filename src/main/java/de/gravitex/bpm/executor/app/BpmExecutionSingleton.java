@@ -14,6 +14,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
+import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.enumeration.LifeCycle;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.EventSubscriptionHandler;
@@ -208,13 +209,22 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return processInstances.values();
 	}
 
-	public void invokeProcessStateChecker(Object finishedProcessItem, ProcessInstance processInstance) throws BpmExecutorException {
-		String itemKey = ProcessItemFormatter.getKey(finishedProcessItem);
+	public void invokeProcessStateChecker(Object processItem, ProcessInstance processInstance, ExecutionPhase executionPhase)
+			throws BpmExecutorException {
+		String itemKey = ProcessItemFormatter.getKey(processItem);
 		logger.info("invoking process state checker for item '" + itemKey + "'...");
-		BpmStateChecker bpmStateChecker = bpmStateCheckers.get(ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId()));
+		BpmStateChecker bpmStateChecker = bpmStateCheckers
+				.get(ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId()));
 		if (bpmStateChecker != null) {
 			bpmStateChecker.setProcessInstance(processInstance);
-			bpmStateChecker.checkState(processInstance);
+			switch (executionPhase) {
+			case BEFORE_PROCESSING:
+				bpmStateChecker.checkStateBeforeExecution(processInstance);				
+				break;
+			case AFTER_PROCESSING:
+				bpmStateChecker.checkStateAfterExecution(processInstance);				
+				break;
+			}
 		} else {
 			logger.info("no bpm state checker found for key '" + itemKey + "'...");
 		}

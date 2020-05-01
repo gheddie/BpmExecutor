@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
 public abstract class ProcessItemHandler<T> {
@@ -41,7 +42,8 @@ public abstract class ProcessItemHandler<T> {
 		return BpmExecutionSingleton.getInstance().formatForProcessInstance(message, processIstance);
 	}
 	
-	protected void invokeProcessStateChecker(T finishedProcessItem, ProcessInstance processInstance) throws BpmExecutorException {
-		BpmExecutionSingleton.getInstance().invokeProcessStateChecker(finishedProcessItem, processInstance);
+	protected void invokeProcessStateChecker(T finishedProcessItem, ProcessInstance processInstance, ExecutionPhase executionPhase)
+			throws BpmExecutorException {
+		BpmExecutionSingleton.getInstance().invokeProcessStateChecker(finishedProcessItem, processInstance, executionPhase);
 	}
 }

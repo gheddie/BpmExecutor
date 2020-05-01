@@ -8,7 +8,12 @@ import de.gravitex.bpm.executor.exception.BpmExecutorException;
 public class TaskT1BpmChecker extends BpmStateChecker {
 
 	@Override
-	public void checkState(ProcessInstance processInstance) throws BpmExecutorException {
-		assertTaskPresent("T2", 2);
+	public void checkStateBeforeExecution(ProcessInstance processInstance) throws BpmExecutorException {
+		assertWaitingAt("TASK_T1");
+	}
+
+	@Override
+	public void checkStateAfterExecution(ProcessInstance processInstance) throws BpmExecutorException {
+		assertTaskPresent("TASK_T2");
 	}
 }

@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.util.ProcessUtil;
 
@@ -19,9 +20,10 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 		
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			TimerEntity timer = castProcessItem(processItem);
+			invokeProcessStateChecker(timer, processInstance, ExecutionPhase.BEFORE_PROCESSING);
 			managementService().executeJob(timer.getId());
 			logger.info("fired timer '" + timer.getJobHandlerConfigurationRaw() + "' immediately (for given settings)...");
-			invokeProcessStateChecker(castProcessItem(processItem), processInstance);
+			invokeProcessStateChecker(timer, processInstance, ExecutionPhase.AFTER_PROCESSING);
 		}
 	}
 
@@ -36,21 +38,23 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 
 	@Override
 	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+		// TODO how to handle exection phase 'BEFORE_RPOCESSING'?
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
 			return;
 		}
-		long dateDiffInSecondsFromTarget = Math.abs(ProcessUtil.getDateDiffInSeconds(castProcessItem(processItem).getDuedate(), new Date()));
+		TimerEntity timer = castProcessItem(processItem);
+		long dateDiffInSecondsFromTarget = Math.abs(ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date()));
 		int allowedTimerDivergenceInSeconds = Math
 				.abs(BpmExecutionSingleton.getInstance().getProcessExecutorSettings().getAllowedTimerDivergenceInSeconds());
 		if (allowedTimerDivergenceInSeconds > 0 && dateDiffInSecondsFromTarget > allowedTimerDivergenceInSeconds) {
 			throw new BpmExecutorException(
-					"timer '" + castProcessItem(processItem).getJobHandlerConfigurationRaw() + "' fired inaccurate (allowed="
+					"timer '" + timer.getJobHandlerConfigurationRaw() + "' fired inaccurate (allowed="
 							+ allowedTimerDivergenceInSeconds + ", actual=" + dateDiffInSecondsFromTarget + " seconds)!!",
 					null);
 		}
-		logger.info("timer " + castProcessItem(processItem).getJobHandlerConfigurationRaw() + " has reached due date ("
+		logger.info("timer " + timer.getJobHandlerConfigurationRaw() + " has reached due date ("
 				+ dateDiffInSecondsFromTarget + " seconds from target date).");
-		invokeProcessStateChecker(castProcessItem(processItem), processInstance);
+		invokeProcessStateChecker(timer, processInstance, ExecutionPhase.AFTER_PROCESSING);
 	}
 
 	@Override
