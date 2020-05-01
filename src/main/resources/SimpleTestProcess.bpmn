@@ -8,8 +8,8 @@
     <bpmn:endEvent id="EndEvent_0l0e5yr">
       <bpmn:incoming>SequenceFlow_0fmcpz8</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_08610d4" sourceRef="Task_1er0snc" targetRef="ExclusiveGateway_10j3rs1" />
-    <bpmn:userTask id="Task_1er0snc" name="T1">
+    <bpmn:sequenceFlow id="SequenceFlow_08610d4" sourceRef="TASK_T1" targetRef="ExclusiveGateway_10j3rs1" />
+    <bpmn:userTask id="TASK_T1" name="T1">
       <bpmn:incoming>SequenceFlow_1gov7sq</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_08610d4</bpmn:outgoing>
     </bpmn:userTask>
@@ -45,7 +45,7 @@
       <bpmn:outgoing>SequenceFlow_1jxyx79</bpmn:outgoing>
       <bpmn:messageEventDefinition messageRef="Message_0kxwcou" />
     </bpmn:intermediateCatchEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_1gov7sq" sourceRef="IntermediateThrowEvent_1onedta" targetRef="Task_1er0snc" />
+    <bpmn:sequenceFlow id="SequenceFlow_1gov7sq" sourceRef="IntermediateThrowEvent_1onedta" targetRef="TASK_T1" />
     <bpmn:intermediateCatchEvent id="IntermediateThrowEvent_1onedta" name="MSG_ONE">
       <bpmn:incoming>SequenceFlow_0pm7u57</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1gov7sq</bpmn:outgoing>
@@ -82,7 +82,7 @@
         <di:waypoint x="428" y="120" />
         <di:waypoint x="464" y="120" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="UserTask_0ssqrhg_di" bpmnElement="Task_1er0snc">
+      <bpmndi:BPMNShape id="UserTask_0ssqrhg_di" bpmnElement="TASK_T1">
         <dc:Bounds x="328" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_0fmcpz8_di" bpmnElement="SequenceFlow_0fmcpz8">
