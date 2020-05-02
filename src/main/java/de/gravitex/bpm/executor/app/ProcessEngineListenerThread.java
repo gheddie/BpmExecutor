@@ -26,11 +26,13 @@ public class ProcessEngineListenerThread extends Thread {
 				for (ProcessInstance processInstance : BpmExecutionSingleton.getInstance().getProcessInstances()) {
 					processEngineListener.deliverEngineState(generateEngineState(processInstance), processInstance);	
 				}
+				/*
 				if (!processEngineListener.processesRunning()) {
 					logger.info("no more running process instances --> stopping execution thread!!");
 					processEngineListener.succeed();
 					stop();
 				}
+				*/
 			}
 		} catch (InterruptedException e) {
 			processEngineListener.fail(e, null);

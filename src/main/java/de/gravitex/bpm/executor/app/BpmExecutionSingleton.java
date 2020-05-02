@@ -56,6 +56,8 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	HashMap<String, ProcessEngineState> deliveredEngineStates = new HashMap<String, ProcessEngineState>();
 
 	private HashMap<String, ProcessExecutor> processExecutors = new HashMap<String, ProcessExecutor>();
+	
+	private HashMap<String, ProcessExecutor> processExecutorDefinitions = new HashMap<String, ProcessExecutor>();
 
 	private BpmExecutionSingleton() {
 		super();
@@ -211,9 +213,23 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public void handleProcessExecutor(ProcessExecutor processExecutor) {
+	/**
+	 * @deprecated Use {@link #registerProcessDefinition(String,ProcessExecutor)} instead
+	 */
+	public void handleProcessExecutor(String identifier, ProcessExecutor processExecutor) {
+		registerProcessDefinition(identifier, processExecutor);
+	}
+
+	public void registerProcessDefinition(String identifier, ProcessExecutor processExecutor) {
 		
 		deployProcess(processExecutor);
+		processExecutorDefinitions.put(identifier, processExecutor);
+	}
+
+	public void startProcess(String identifier) {
+		
+		ProcessExecutor processExecutor = processExecutorDefinitions.get(identifier);
+		
 		String businessKey = UUID.randomUUID().toString();
 		ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processExecutor.getProcessDefinitionKey(), businessKey);
 		logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));

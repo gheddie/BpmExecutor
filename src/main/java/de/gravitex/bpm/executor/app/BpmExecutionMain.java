@@ -12,14 +12,15 @@ public class BpmExecutionMain {
 
 	public static void main(String[] args) {
 		try {
-			BpmExecutionSingleton instance = BpmExecutionSingleton.getInstance();
-			instance.handleProcessExecutor(
+			BpmExecutionSingleton.getInstance().registerProcessDefinition("123",
 					ProcessExecutor.create("SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
-							.withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()).withSettings(DEFAULT_SETTINGS));
-			instance.handleProcessExecutor(ProcessExecutor.create("AnotherProcess.bpmn", "AnotherProcess")
-					.withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()).withSettings(DEFAULT_SETTINGS));
-			instance.handleProcessExecutor(
+							.withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
+			BpmExecutionSingleton.getInstance().registerProcessDefinition("456",
+					ProcessExecutor.create("AnotherProcess.bpmn", "AnotherProcess").withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
+			BpmExecutionSingleton.getInstance().registerProcessDefinition("789",
 					ProcessExecutor.create("LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
+			
+			BpmExecutionSingleton.getInstance().startProcess("123");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

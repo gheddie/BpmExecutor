@@ -14,22 +14,18 @@ import lombok.Data;
 
 @Data
 public class ProcessExecutor implements IProcessProgressListener {
-	
-	private ProcessInstance processInstance;
-	
-	private String businessKey;
-	
+
+	// definition
 	private ProcessExecutorSettings processExecutorSettings;
-	
+	private ProcessExecutorState processExecutorState;
 	private HashMap<String, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<String, ProcessItemHandler<?>>();
-	
 	private HashMap<String, BpmStateChecker> bpmStateCheckers = new HashMap<String, BpmStateChecker>();
-	
 	private String bpmFileName;
-	
 	private String processDefinitionKey;
 	
-	private ProcessExecutorState processExecutorState;
+	// runtime
+	private ProcessInstance processInstance;
+	private String businessKey;
 
 	private ProcessExecutor() {
 		super();
