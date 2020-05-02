@@ -3,6 +3,7 @@ package de.gravitex.bpm.executor.app;
 import org.apache.log4j.Logger;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
+import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 
@@ -39,9 +40,9 @@ public class ProcessEngineListenerThread extends Thread {
 				}
 			}
 		} catch (InterruptedException e) {
-			processEngineListener.fail(e);
+			processEngineListener.fail(e, null);
 		} catch (BpmExecutorException e) {
-			processEngineListener.fail(e);
+			processEngineListener.fail(e, e.getProcessInstance());
 		}
 	}
 

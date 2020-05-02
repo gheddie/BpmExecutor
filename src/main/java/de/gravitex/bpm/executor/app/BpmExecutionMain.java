@@ -15,22 +15,32 @@ public class BpmExecutionMain {
 
 	private static void testSimpleProcess() {
 		try {
-			ProcessExecutor processExecutor = ProcessExecutor.create().addDeployment("SimpleTestProcess.bpmn")
+			ProcessExecutor processExecutor = ProcessExecutor.create()
+					// deployments
+					.addDeployment("SimpleTestProcess.bpmn")
+					// settings
 					.withSettings(ProcessExecutorSettings.fromValues(10, false, true, 500))
+					// handlers
 					.withCustomHandler("SimpleTestProcess", "TASK#T1", new TaskT1Handler())
+					// checkers
 					.withBpmStateChecker("SimpleTestProcess", "TASK#T1", new TaskT1BpmChecker());
-			processExecutor.startProcess("SimpleTestProcess", 1);
+			processExecutor.startProcess("SimpleTestProcess");
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void testAnotherProcess() {
 		try {
-			ProcessExecutor processExecutor = ProcessExecutor.create().addDeployment("SimpleTestProcess.bpmn")
-					.addDeployment("AnotherProcess.bpmn").withSettings(ProcessExecutorSettings.fromValues(10, false, true, 500))
+			ProcessExecutor processExecutor = ProcessExecutor.create()
+					// deployments
+					.addDeployment("SimpleTestProcess.bpmn")
+					.addDeployment("AnotherProcess.bpmn")
+					// settings
+					.withSettings(ProcessExecutorSettings.fromValues(10, false, true, 500))
+					// checkers
 					.withBpmStateChecker("AnotherProcess", "TASK#TX", new TaskTxBpmChecker());
-			processExecutor.startProcess("AnotherProcess", 1);
+			processExecutor.startProcess("AnotherProcess");
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}

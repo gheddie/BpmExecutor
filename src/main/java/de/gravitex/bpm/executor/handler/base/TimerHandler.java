@@ -50,7 +50,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 			throw new BpmExecutorException(
 					"timer '" + timer.getJobHandlerConfigurationRaw() + "' fired inaccurate (allowed="
 							+ allowedTimerDivergenceInSeconds + ", actual=" + dateDiffInSecondsFromTarget + " seconds)!!",
-					null);
+					null, processInstance);
 		}
 		logger.info("timer " + timer.getJobHandlerConfigurationRaw() + " has reached due date ("
 				+ dateDiffInSecondsFromTarget + " seconds from target date).");

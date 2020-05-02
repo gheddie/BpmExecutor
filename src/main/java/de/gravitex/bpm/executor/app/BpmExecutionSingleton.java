@@ -13,6 +13,8 @@ import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
+import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
+import de.gravitex.bpm.executor.app.listener.IProcessProgressListener;
 import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.enumeration.LifeCycle;
@@ -84,19 +86,17 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		try {
 			processEngine.getRepositoryService().createDeployment().addClasspathResource(processFileName).deploy();
 		} catch (Exception e) {
-			fail(e);
+			fail(e, null);
 		}
 	}
 
-	public BpmExecutionSingleton startProcessInstance(String processDefinitionKey, int count) {
-		for (int i=0;i<count;i++) {
-			String businessKey = UUID.randomUUID().toString();
-			ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
-			logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));
-			processInstances.put(processInstance.getId(), processInstance);
-			businessKeys.put(processInstance.getId(), businessKey);			
-		}
-		return this;
+	public ProcessInstance startProcessInstance(String processDefinitionKey, IProcessProgressListener processExecutor) {
+		String businessKey = UUID.randomUUID().toString();
+		ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
+		logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));
+		processInstances.put(processInstance.getId(), processInstance);
+		businessKeys.put(processInstance.getId(), businessKey);
+		return processInstance;
 	}
 
 	public void deliverEngineState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
@@ -115,7 +115,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 					ProcessItemHandler<?> handler = getItemHandler(processItem, processInstance);
 					if (handler == null) {
 						throw new BpmExecutorException(
-								"no handler found for process item type: " + processItem.getClass().getCanonicalName(), null);
+								"no handler found for process item type: " + processItem.getClass().getCanonicalName(), null, processInstance);
 					}
 					// logger.info("handling object: " + handler.format(processItem) + ", diff type: " + lifeCycle);
 					switch (lifeCycle) {
@@ -162,9 +162,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	@Override
-	public void fail(Exception e) {
-		logger.error("execution failed: " + e.getMessage() + " ["+e.getClass().getCanonicalName()+"]");
-		System.exit(0);
+	public void fail(Exception e, ProcessInstance processInstance) {
+		logger.error("execution for process [" + processInstance.getId() + "] failed: " + e.getMessage() + " ["
+				+ e.getClass().getCanonicalName() + "]");
 	}
 
 	@Override

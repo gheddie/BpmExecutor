@@ -31,9 +31,9 @@ public abstract class BpmStateChecker {
 	
 	protected BpmStateChecker assertTaskPresent(String taskDefinitionKey) throws BpmExecutorException {
 		List<Task> moo = taskService().createTaskQuery().processInstanceId(getProcessInstance().getId()).list();
-		Task task = taskService().createTaskQuery().processInstanceId(getProcessInstance().getId()).taskDefinitionKey(taskDefinitionKey).singleResult();
+		Task task = taskService().createTaskQuery().processInstanceId(processInstance.getId()).taskDefinitionKey(taskDefinitionKey).singleResult();
 		if (task == null) {
-			throw new BpmExecutorException("task " + taskDefinitionKey + " is not present!!", null);
+			throw new BpmExecutorException("task " + taskDefinitionKey + " is not present!!", null, processInstance);
 		}
 		return this;
 	}
@@ -44,7 +44,7 @@ public abstract class BpmStateChecker {
 			throw new BpmExecutorException(
 					"process instance [" + getProcessInstance().getId() + "] should be waiting at '" + activityId
 							+ "' but it is not (only at [" + waitingActivityIds + "])!!",
-					null);	
+					null, processInstance);	
 		}
 		return this;
 	}
@@ -54,7 +54,7 @@ public abstract class BpmStateChecker {
 		boolean ended = historicProcessInstance != null;
 		if (!ended) {
 			throw new BpmExecutorException("process instance [" + getProcessInstance().getId() + "] should be ended, but it is not" + "!!",
-					null);
+					null, processInstance);
 		}
 		return this;
 	}
