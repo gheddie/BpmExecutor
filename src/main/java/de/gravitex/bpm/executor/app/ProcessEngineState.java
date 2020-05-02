@@ -27,30 +27,32 @@ public class ProcessEngineState {
 		
 		ProcessEngineState processEngineState = new ProcessEngineState();
 		ProcessEngine processEngine = BpmExecutionSingleton.getInstance().getProcessEngine();
-		
+
 		// tasks
 		for (Task task : processEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).list()) {
 			if (processItems.get(Task.class) == null) {
-				processItems.put(Task.class, new HashMap<String, Object>());	
+				processItems.put(Task.class, new HashMap<String, Object>());
 			}
 			processItems.get(Task.class).put(task.getId(), task);
 		}
 		// jobs
 		for (Job job : processEngine.getManagementService().createJobQuery().processInstanceId(processInstance.getId()).list()) {
 			if (processItems.get(Job.class) == null) {
-				processItems.put(Job.class, new HashMap<String, Object>());	
+				processItems.put(Job.class, new HashMap<String, Object>());
 			}
 			processItems.get(Job.class).put(job.getId(), job);
 		}
 		// messages
-		for (EventSubscription eventSubscription : processEngine.getRuntimeService().createEventSubscriptionQuery().processInstanceId(processInstance.getId()).list()) {
+		for (EventSubscription eventSubscription : processEngine.getRuntimeService().createEventSubscriptionQuery()
+				.processInstanceId(processInstance.getId()).list()) {
 			if (processItems.get(EventSubscription.class) == null) {
-				processItems.put(EventSubscription.class, new HashMap<String, Object>());	
+				processItems.put(EventSubscription.class, new HashMap<String, Object>());
 			}
 			processItems.get(EventSubscription.class).put(eventSubscription.getId(), eventSubscription);
 		}
-		
+
 		processEngineState.setProcessItems(processItems);
+
 		return processEngineState;
 	}
 	

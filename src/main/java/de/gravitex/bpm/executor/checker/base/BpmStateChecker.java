@@ -6,7 +6,6 @@ import org.camunda.bpm.engine.HistoryService;
 import org.camunda.bpm.engine.ManagementService;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.TaskService;
-import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 
@@ -50,9 +49,7 @@ public abstract class BpmStateChecker {
 	}
 	
 	protected BpmStateChecker assertExecutionEnded() throws BpmExecutorException {
-		HistoricProcessInstance historicProcessInstance = historyService().createHistoricProcessInstanceQuery().processInstanceId(getProcessInstance().getId()).singleResult();
-		boolean ended = historicProcessInstance != null;
-		if (!ended) {
+		if (!BpmExecutionSingleton.getInstance().executionEnded(getProcessInstance())) {
 			throw new BpmExecutorException("process instance [" + getProcessInstance().getId() + "] should be ended, but it is not" + "!!",
 					null, processInstance);
 		}

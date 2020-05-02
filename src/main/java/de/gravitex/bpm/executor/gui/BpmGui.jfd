@@ -4,7 +4,7 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.GridBagLayout ) {
-			"$columnSpecs": "119, 0:1.0"
+			"$columnSpecs": "194, 0:1.0"
 			"$rowSpecs": "0:1.0, 0"
 			"$hGap": 5
 			"$vGap": 5
@@ -15,13 +15,28 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 				name: "scrollPane1"
 				add( new FormComponent( "javax.swing.JList" ) {
-					name: "list1"
+					name: "bpmDefinitionList"
 				} )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane2"
+				add( new FormComponent( "javax.swing.JTable" ) {
+					name: "executionsTable"
+				} )
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridx": 1
+			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
-				name: "button1"
+				name: "btnStartProcess"
 				"text": "Start process"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridy": 1
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnRefresh"
+				"text": "Aktualisieren"
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridx": 1
 				"gridy": 1
 			} )
 		}, new FormLayoutConstraints( null ) {

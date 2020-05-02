@@ -8,19 +8,19 @@ import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 
 public class BpmExecutionMain {
 
-	private static final ProcessExecutorSettings DEFAULT_SETTINGS = ProcessExecutorSettings.fromValues(10, false, true);
+	private static final ProcessExecutorSettings DEFAULT_SETTINGS = ProcessExecutorSettings.fromValues(100, false, true);
 
 	public static void main(String[] args) {
 		try {
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("123",
-					ProcessExecutor.create("SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
+			BpmExecutionSingleton.getInstance().registerProcessDefinition("SimpleTestProcess",
+					new BpmDefinition(DEFAULT_SETTINGS, "SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
 							.withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("456",
-					ProcessExecutor.create("AnotherProcess.bpmn", "AnotherProcess").withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("789",
-					ProcessExecutor.create("LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
+			BpmExecutionSingleton.getInstance().registerProcessDefinition("AnotherProcess",
+					new BpmDefinition(DEFAULT_SETTINGS, "AnotherProcess.bpmn", "AnotherProcess").withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
+			BpmExecutionSingleton.getInstance().registerProcessDefinition("LoopProcess",
+					new BpmDefinition(DEFAULT_SETTINGS, "LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
 			
-			BpmExecutionSingleton.getInstance().startProcess("123");
+			BpmExecutionSingleton.getInstance().startProcess("SimpleTestProcess");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
