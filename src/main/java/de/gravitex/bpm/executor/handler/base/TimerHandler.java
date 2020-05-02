@@ -18,7 +18,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	@Override
 	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		
-		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
+		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isFireTimersImmediately()) {
 			TimerEntity timer = castProcessItem(processItem);
 			invokeProcessStateChecker(timer, processInstance, ExecutionPhase.BEFORE_PROCESSING);
 			managementService().executeJob(timer.getId());
@@ -31,7 +31,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		TimerEntity timer = castProcessItem(processItem);
 		long seconds = ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date());
-		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isTraceIntermediateLifeCycles()) {
+		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isTraceIntermediateLifeCycles()) {
 			logger.info(formatForProcessInstance("handling timer '" + timer.getJobHandlerConfigurationRaw() + "' life cycle --> " + seconds + " seconds to go... ", processInstance));			
 		}
 	}
@@ -39,13 +39,13 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	@Override
 	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		// TODO how to handle exection phase 'BEFORE_RPOCESSING'?
-		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings().isFireTimersImmediately()) {
+		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isFireTimersImmediately()) {
 			return;
 		}
 		TimerEntity timer = castProcessItem(processItem);
 		long dateDiffInSecondsFromTarget = Math.abs(ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date()));
 		int allowedTimerDivergenceInSeconds = Math
-				.abs(BpmExecutionSingleton.getInstance().getProcessExecutorSettings().getAllowedTimerDivergenceInSeconds());
+				.abs(BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).getAllowedTimerDivergenceInSeconds());
 		if (allowedTimerDivergenceInSeconds > 0 && dateDiffInSecondsFromTarget > allowedTimerDivergenceInSeconds) {
 			throw new BpmExecutorException(
 					"timer '" + timer.getJobHandlerConfigurationRaw() + "' fired inaccurate (allowed="

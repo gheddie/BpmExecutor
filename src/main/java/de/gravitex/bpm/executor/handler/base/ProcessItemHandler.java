@@ -9,10 +9,14 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
+import lombok.Data;
 
+@Data
 public abstract class ProcessItemHandler<T> {
 	
 	private static final Logger logger = Logger.getLogger(ProcessItemHandler.class);
+	
+	private int executionCounter = 0;
 
 	protected abstract T castProcessItem(Object processItem);
 	
@@ -45,5 +49,9 @@ public abstract class ProcessItemHandler<T> {
 	protected void invokeProcessStateChecker(T finishedProcessItem, ProcessInstance processInstance, ExecutionPhase executionPhase)
 			throws BpmExecutorException {
 		BpmExecutionSingleton.getInstance().invokeProcessStateChecker(finishedProcessItem, processInstance, executionPhase);
+	}
+
+	public void increaseCounter() {
+		executionCounter++;
 	}
 }

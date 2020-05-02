@@ -5,13 +5,12 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
-import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 
 public class ProcessEngineListenerThread extends Thread {
 
 	private static final Logger logger = Logger.getLogger(ProcessEngineListenerThread.class);
 
-	private static final long DEFAULT_STEP_MILLIS = 1000;
+	private static final long DEFAULT_STEP_MILLIS = 500;
 
 	private IProcessEngineListener processEngineListener;
 
@@ -23,15 +22,9 @@ public class ProcessEngineListenerThread extends Thread {
 	public void run() {
 		try {
 			while (true) {
-				ProcessExecutorSettings settings = BpmExecutionSingleton.getInstance().getProcessExecutorSettings();
-				if (settings != null) {
-					Thread.sleep(settings.getStepMillis());					
-				} else {
-					Thread.sleep(DEFAULT_STEP_MILLIS);
-				}
+				Thread.sleep(DEFAULT_STEP_MILLIS);
 				for (ProcessInstance processInstance : BpmExecutionSingleton.getInstance().getProcessInstances()) {
-					ProcessEngineState engineState = generateEngineState(processInstance);
-					processEngineListener.deliverEngineState(engineState, processInstance);	
+					processEngineListener.deliverEngineState(generateEngineState(processInstance), processInstance);	
 				}
 				if (!processEngineListener.processesRunning()) {
 					logger.info("no more running process instances --> stopping execution thread!!");

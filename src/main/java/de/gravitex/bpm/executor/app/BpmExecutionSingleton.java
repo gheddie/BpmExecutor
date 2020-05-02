@@ -1,6 +1,6 @@
 package de.gravitex.bpm.executor.app;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -11,17 +11,17 @@ import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
+import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
-import de.gravitex.bpm.executor.app.listener.IProcessProgressListener;
 import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.enumeration.LifeCycle;
+import de.gravitex.bpm.executor.enumeration.ProcessExecutorState;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.EventSubscriptionHandler;
 import de.gravitex.bpm.executor.handler.base.ProcessItemHandler;
-import de.gravitex.bpm.executor.handler.base.ProcessItemKey;
 import de.gravitex.bpm.executor.handler.base.TaskHandler;
 import de.gravitex.bpm.executor.handler.base.TimerHandler;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
@@ -38,7 +38,12 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	
 	private ProcessEngineListenerThread processEngineListenerThread;
 	
-	private ProcessExecutorSettings processExecutorSettings;
+	private static final ProcessExecutorSettings DEFAULT_EXECUTION_SETTINGS = ProcessExecutorSettings.fromValues(10, false, true);
+
+	/**
+	 * @deprecated Use {@link #DEFAULT_EXECUTION_SETTINGS} instead
+	 */
+	private static final ProcessExecutorSettings DEFAULT_SETTINGS = DEFAULT_EXECUTION_SETTINGS;
 	
 	private static final HashMap<Class<?>, ProcessItemHandler<?>> defaultProcessItemHandlers = new HashMap<Class<?>, ProcessItemHandler<?>>();
 	static {
@@ -46,20 +51,12 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		defaultProcessItemHandlers.put(TimerEntity.class, new TimerHandler());
 		defaultProcessItemHandlers.put(EventSubscriptionEntity.class, new EventSubscriptionHandler());
 	}
-	
-	private HashMap<ProcessItemKey, ProcessItemHandler<?>> customProcessItemHandlers = new HashMap<ProcessItemKey, ProcessItemHandler<?>>();
 
 	// process instance id -> process engine state
 	HashMap<String, ProcessEngineState> deliveredEngineStates = new HashMap<String, ProcessEngineState>();
 
-	// process instance id -> process instance
-	private HashMap<String, ProcessInstance> processInstances = new HashMap<String, ProcessInstance>();
+	private HashMap<String, ProcessExecutor> processExecutors = new HashMap<String, ProcessExecutor>();
 
-	// process instance id -> business key
-	private HashMap<String, String> businessKeys = new HashMap<String, String>();
-
-	private HashMap<ProcessItemKey, BpmStateChecker> bpmStateCheckers = new HashMap<ProcessItemKey, BpmStateChecker>();
-	
 	private BpmExecutionSingleton() {
 		super();
 	}
@@ -82,21 +79,15 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		processEngineListenerThread.start();
 	}
 
-	public void deployProcess(String processFileName) {
+	public void deployProcess(ProcessExecutor processExecutor) {
 		try {
-			processEngine.getRepositoryService().createDeployment().addClasspathResource(processFileName).deploy();
+			// TODO check if process is already deployed!!
+			 Deployment deployment = processEngine.getRepositoryService().createDeployment().addClasspathResource(processExecutor.getBpmFileName()).deploy();
 		} catch (Exception e) {
-			fail(e, null);
+			// fail(e, null);
+			logger.error(e);
+			processExecutor.setProcessExecutorState(ProcessExecutorState.DEPLOYMENT_FAILED);
 		}
-	}
-
-	public ProcessInstance startProcessInstance(String processDefinitionKey, IProcessProgressListener processExecutor) {
-		String businessKey = UUID.randomUUID().toString();
-		ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, businessKey);
-		logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));
-		processInstances.put(processInstance.getId(), processInstance);
-		businessKeys.put(processInstance.getId(), businessKey);
-		return processInstance;
 	}
 
 	public void deliverEngineState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
@@ -116,6 +107,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 					if (handler == null) {
 						throw new BpmExecutorException(
 								"no handler found for process item type: " + processItem.getClass().getCanonicalName(), null, processInstance);
+					} else {
+						logger.info("excuting handler of class '" + handler.getClass().getSimpleName() + "' [execution counter="
+								+ handler.getExecutionCounter() + "]...");
 					}
 					// logger.info("handling object: " + handler.format(processItem) + ", diff type: " + lifeCycle);
 					switch (lifeCycle) {
@@ -152,10 +146,11 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	private ProcessItemHandler<?> getItemHandler(Object processItem, ProcessInstance processInstance) {
+		
 		String itemKey = ProcessItemFormatter.getKey(processItem);
-		ProcessItemKey handlerKey = ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId());
-		ProcessItemHandler<?> customHandler = customProcessItemHandlers.get(handlerKey);
+		ProcessItemHandler<?> customHandler = processExecutors.get(processInstance.getId()).getHandler(itemKey);
 		if (customHandler != null) {
+			customHandler.increaseCounter();
 			return customHandler;
 		}
 		return defaultProcessItemHandlers.get(processItem.getClass());
@@ -165,22 +160,12 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	public void fail(Exception e, ProcessInstance processInstance) {
 		logger.error("execution for process [" + processInstance.getId() + "] failed: " + e.getMessage() + " ["
 				+ e.getClass().getCanonicalName() + "]");
+		processExecutors.get(processInstance.getId()).setProcessExecutorState(ProcessExecutorState.FAILED);
 	}
 
 	@Override
 	public void succeed() {
 		logger.info("execution suceeded to end...");
-		System.exit(0);
-	}
-
-	public BpmExecutionSingleton registerHandler(String processDefinitionKey, String itemKey, ProcessItemHandler<?> handler) {
-		customProcessItemHandlers.put(ProcessItemKey.fromValues(itemKey, processDefinitionKey), handler);
-		return instance;
-	}
-	
-	public BpmExecutionSingleton registerChecker(String processDefinitionKey, String itemKey, BpmStateChecker bpmStateChecker) {
-		bpmStateCheckers.put(ProcessItemKey.fromValues(itemKey, processDefinitionKey), bpmStateChecker);
-		return instance;
 	}
 
 	public ProcessEngine getProcessEngine() {
@@ -193,28 +178,24 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return list.size() > 0;
 	}
 	
-	public ProcessExecutorSettings getProcessExecutorSettings() {
-		return processExecutorSettings;
-	}
-	
-	public void setProcessExecutorSettings(ProcessExecutorSettings aProcessExecutorSettings) {
-		this.processExecutorSettings = aProcessExecutorSettings;
-	}
-
 	public String getBusinessKey(ProcessInstance processInstance) {
-		return businessKeys.get(processInstance.getId());
+		return processExecutors.get(processInstance.getId()).getBusinessKey();
 	}
 
-	public Collection<ProcessInstance> getProcessInstances() {
-		return processInstances.values();
+	public List<ProcessInstance> getProcessInstances() {
+		
+		List<ProcessInstance> processInstances = new ArrayList<ProcessInstance>();
+		for (ProcessExecutor processExecutor : processExecutors.values()) {
+			processInstances.add(processExecutor.getProcessInstance());
+		}
+		return processInstances;
 	}
 
 	public void invokeProcessStateChecker(Object processItem, ProcessInstance processInstance, ExecutionPhase executionPhase)
 			throws BpmExecutorException {
 		String itemKey = ProcessItemFormatter.getKey(processItem);
 		logger.info("invoking process state checker for item '" + itemKey + "'...");
-		BpmStateChecker bpmStateChecker = bpmStateCheckers
-				.get(ProcessItemKey.fromValues(itemKey, processInstance.getProcessDefinitionId()));
+		BpmStateChecker bpmStateChecker = processExecutors.get(processInstance.getId()).getChecker(itemKey);
 		if (bpmStateChecker != null) {
 			bpmStateChecker.setProcessInstance(processInstance);
 			switch (executionPhase) {
@@ -228,5 +209,25 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		} else {
 			logger.info("no bpm state checker found for key '" + itemKey + "'...");
 		}
+	}
+
+	public void handleProcessExecutor(ProcessExecutor processExecutor) {
+		
+		deployProcess(processExecutor);
+		String businessKey = UUID.randomUUID().toString();
+		ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(processExecutor.getProcessDefinitionKey(), businessKey);
+		logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));
+		processExecutor.setBusinessKey(businessKey);
+		processExecutor.setProcessInstance(processInstance);
+		processExecutor.setProcessExecutorState(ProcessExecutorState.RUNNING);
+		processExecutors.put(processInstance.getId(), processExecutor);
+	}
+	
+	public ProcessExecutorSettings getProcessExecutorSettings(ProcessInstance processInstance) {
+		ProcessExecutorSettings processExecutorSettings = processExecutors.get(processInstance.getId()).getProcessExecutorSettings();
+		if (processExecutorSettings == null) {
+			return DEFAULT_EXECUTION_SETTINGS;
+		}
+		return processExecutorSettings;
 	}
 }
