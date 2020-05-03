@@ -15,4 +15,8 @@ public interface IProcessEngineListener {
 	void succeed();
 
 	void checkExecutionEnded(ProcessExecutor processExecutor);
+
+	void lock();
+
+	void unlock();
 }

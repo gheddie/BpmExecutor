@@ -22,7 +22,7 @@
       <bpmn:incoming>SequenceFlow_1e45s9w</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0nix8jt</bpmn:outgoing>
       <bpmn:timerEventDefinition>
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT10S</bpmn:timeDuration>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1M</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:intermediateCatchEvent>
     <bpmn:sequenceFlow id="SequenceFlow_1e45s9w" sourceRef="TASK_T2" targetRef="Timer1" />

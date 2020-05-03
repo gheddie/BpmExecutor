@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
+import de.gravitex.bpm.executor.handler.base.IProcessStartHandler;
 import de.gravitex.bpm.executor.handler.base.ProcessItemHandler;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 import lombok.Data;
@@ -20,6 +21,8 @@ public class BpmDefinition {
 	private String bpmFileName;
 	
 	private String processDefinitionKey;
+
+	private IProcessStartHandler processStartHandler;
 	
 	public BpmDefinition(ProcessExecutorSettings processExecutorSettings, String bpmFileName, String processDefinitionKey) {
 		super();
@@ -53,5 +56,10 @@ public class BpmDefinition {
 	
 	public String toString() {
 		return processDefinitionKey;
+	}
+
+	public BpmDefinition withStartHandler(IProcessStartHandler aProcessStartHandler) {
+		this.processStartHandler = aProcessStartHandler;
+		return this;
 	}
 }

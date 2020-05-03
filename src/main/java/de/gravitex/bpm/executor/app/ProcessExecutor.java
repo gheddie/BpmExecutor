@@ -1,5 +1,7 @@
 package de.gravitex.bpm.executor.app;
 
+import java.util.Date;
+
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.listener.IProcessProgressListener;
@@ -10,6 +12,8 @@ import lombok.Data;
 
 @Data
 public class ProcessExecutor implements IProcessProgressListener {
+	
+	private Date startDate;
 
 	private ProcessInstance processInstance;
 	
