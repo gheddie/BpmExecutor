@@ -1,0 +1,27 @@
+@startuml
+loop infintite
+ProcessEngineListenerThread -> ProcessEngineListenerThread: run()
+end
+ProcessEngineListenerThread -> BpmExecutionSingleton: getProcessExecutors()
+BpmExecutionSingleton -> ProcessEngineListenerThread: process executors
+loop running executors
+ProcessEngineListenerThread -> ProcessEngineListenerThread: stepExecutor(ProcessExecutor)
+ProcessEngineListenerThread -> IProcessEngineListener : checkExecutionEnded(ProcessExecutor)
+ProcessEngineListenerThread -> ProcessEngineListenerThread: generateProcessState(ProcessExecutor)
+ProcessEngineListenerThread -> IProcessEngineListener : deliverEngineState(ProcessEngineState)
+
+ProcessEngineListenerThread -> IProcessEngineListener : fail(Exception, ProcessInstance)
+
+loop lifecycles
+loop objects for lifecycle
+end
+IProcessEngineListener -> IProcessEngineListener : getItemHandler(Object, ProcessInstance)
+
+IProcessEngineListener -> ProcessItemHandler : handleLifeCycle/Begin/End() throws BpmExecutorException
+ProcessItemHandler -> IProcessEngineListener : invokeProcessStateChecker(Object, ProcessInstance, ExecutionPhase)
+IProcessEngineListener -> BpmStateChecker : checkStateBeforeExecution(ProcessInstance) throws BpmExecutorException
+IProcessEngineListener -> BpmStateChecker : checkStateAfterExecution(ProcessInstance) throws BpmExecutorException
+
+end
+end
+@enduml

@@ -180,11 +180,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		processExecutors.get(processInstance.getId()).setProcessExecutorState(ProcessExecutorState.FAILED);
 	}
 
-	@Override
-	public void succeed() {
-		logger.info("execution suceeded to end...");
-	}
-
 	public ProcessEngine getProcessEngine() {
 		return processEngine;
 	}

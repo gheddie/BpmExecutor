@@ -3,7 +3,6 @@ package de.gravitex.bpm.executor.app;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
 import de.gravitex.bpm.executor.enumeration.ProcessExecutorState;
@@ -59,51 +58,18 @@ public class ProcessEngineListenerThread extends Thread {
 
 	private void stepExecutor(ProcessExecutor processExecutor) throws Exception {
 		processEngineListener.checkExecutionEnded(processExecutor);
-		processEngineListener.deliverEngineState(generateEngineState(processExecutor.getProcessInstance()),
+		processEngineListener.deliverEngineState(generateProcessState(processExecutor),
 				processExecutor.getProcessInstance());
 	}
 
-	/*
-	public void run() {
-		try {
-			while (true) {
-				logger.info("thread running...");
-				Thread.sleep(DEFAULT_STEP_MILLIS);
-				ProcessEngineState engineState = null;
-				processEngineListener.lock();
-				Collection<ProcessExecutor> processExecutors = BpmExecutionSingleton.getInstance().getProcessExecutors(true);
-				for (ProcessExecutor processExecutor : processExecutors) {
-					if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
-						processEngineListener.checkExecutionEnded(processExecutor);
-						engineState = generateEngineState(processExecutor.getProcessInstance());
-						processEngineListener.deliverEngineState(engineState,
-								processExecutor.getProcessInstance());	
-					}
-				}
-				processEngineListener.unlock();
-			}
-		} catch (Exception e) {
-			processEngineListener.unlock();
-			logger.warn("caught exception in thread: " + e.getClass().getCanonicalName());
-			if (e instanceof InterruptedException) {
-				processEngineListener.fail(e, null);
-			} else if (e instanceof BpmExecutorException) {
-				processEngineListener.fail(e, ((BpmExecutorException) e).getProcessInstance());
-			} else {
-				String message = "unknown thread failure: " + e.getMessage();
-				logger.error(message);
-				BpmExecutionSingleton.getInstance().putMessage(null, message, e);
-			}
-			e.printStackTrace();
-			logger.warn("resuming thread...");
-			run();
-		} finally {
-			processEngineListener.unlock();
-		}
+	/**
+	 * @deprecated Use {@link #generateProcessState(ProcessExecutor)} instead
+	 */
+	private ProcessEngineState generateEngineState(ProcessExecutor processExecutor) {
+		return generateProcessState(processExecutor);
 	}
-	*/
 
-	private ProcessEngineState generateEngineState(ProcessInstance processInstance) {
-		return new ProcessEngineState().fromProcessInstance(processInstance);
+	private ProcessEngineState generateProcessState(ProcessExecutor processExecutor) {
+		return new ProcessEngineState().fromProcessInstance(processExecutor.getProcessInstance());
 	}
 }

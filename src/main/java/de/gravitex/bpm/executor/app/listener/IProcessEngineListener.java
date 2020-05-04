@@ -12,8 +12,6 @@ public interface IProcessEngineListener {
 
 	void fail(Exception e, ProcessInstance processInstance);
 
-	void succeed();
-
 	void checkExecutionEnded(ProcessExecutor processExecutor);
 
 	void lock();
