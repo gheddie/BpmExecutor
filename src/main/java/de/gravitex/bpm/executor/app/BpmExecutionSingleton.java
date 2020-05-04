@@ -12,6 +12,7 @@ import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.ProcessEngineConfiguration;
 import org.camunda.bpm.engine.history.HistoricProcessInstance;
 import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.repository.Deployment;
@@ -25,6 +26,7 @@ import de.gravitex.bpm.executor.enumeration.ProcessExecutorState;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.handler.base.EventSubscriptionHandler;
 import de.gravitex.bpm.executor.handler.base.IProcessStartHandler;
+import de.gravitex.bpm.executor.handler.base.MessageHandler;
 import de.gravitex.bpm.executor.handler.base.ProcessItemHandler;
 import de.gravitex.bpm.executor.handler.base.TaskHandler;
 import de.gravitex.bpm.executor.handler.base.TimerHandler;
@@ -47,8 +49,10 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	private static final HashMap<Class<?>, ProcessItemHandler<?>> defaultProcessItemHandlers = new HashMap<Class<?>, ProcessItemHandler<?>>();
 	static {
 		defaultProcessItemHandlers.put(TaskEntity.class, new TaskHandler());
-		defaultProcessItemHandlers.put(TimerEntity.class, new TimerHandler());
 		defaultProcessItemHandlers.put(EventSubscriptionEntity.class, new EventSubscriptionHandler());
+		// jobs
+		defaultProcessItemHandlers.put(TimerEntity.class, new TimerHandler());
+		defaultProcessItemHandlers.put(MessageEntity.class, new MessageHandler());
 	}
 
 	// process instance id -> process engine state
@@ -152,7 +156,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return "[" + processInstance.getProcessDefinitionId() + " --> ID=" + processInstance.getId() + " --> "+processInstanceState+"] " + message;
 	}
 
-	private ProcessItemHandler<?> getItemHandler(Object processItem, ProcessInstance processInstance) {
+	private ProcessItemHandler<?> getItemHandler(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
 		
 		String itemKey = ProcessItemFormatter.getKey(processItem);
 		ProcessItemHandler<?> customHandler = processExecutors.get(processInstance.getId()).getHandler(itemKey);
@@ -160,7 +164,13 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 			customHandler.increaseCounter();
 			return customHandler;
 		}
-		return defaultProcessItemHandlers.get(processItem.getClass());
+		ProcessItemHandler<?> processItemHandler = defaultProcessItemHandlers.get(processItem.getClass());
+		if (processItemHandler == null) {
+			throw new BpmExecutorException(
+					"unable to aquire default item handler for type [" + processItem.getClass().getCanonicalName() + "]!!", null,
+					processInstance);
+		}
+		return processItemHandler;
 	}
 
 	@Override

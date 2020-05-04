@@ -35,4 +35,8 @@ public class ProcessExecutor implements IProcessProgressListener {
 	public BpmStateChecker getChecker(String itemKey) {
 		return bpmDefinition.getBpmStateCheckers().get(itemKey);
 	}
+	
+	public String toString() {
+		return bpmDefinition.getProcessDefinitionKey() + " [ID=" + processInstance.getId() + "]";
+	}
 }

@@ -1,8 +1,6 @@
 package de.gravitex.bpm.executor.app;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
@@ -15,7 +13,7 @@ public class ProcessEngineListenerThread extends Thread {
 
 	private static final Logger logger = Logger.getLogger(ProcessEngineListenerThread.class);
 
-	private static final long DEFAULT_STEP_MILLIS = 5000;
+	private static final long DEFAULT_STEP_MILLIS = 2500;
 
 	private IProcessEngineListener processEngineListener;
 
@@ -23,7 +21,49 @@ public class ProcessEngineListenerThread extends Thread {
 		super();
 		this.processEngineListener = processEngineListener;
 	}
+	
+	public void run() {
+		
+		while (true) {
+			logger.info("thread running...");
+			try {
+				Thread.sleep(DEFAULT_STEP_MILLIS);
+			} catch (InterruptedException e) {
+				logger.error("thread was interrupted: " + e);
+				handleThreadInterrupted();
+			}
+			// loop running executors
+			processEngineListener.lock();
+			Collection<ProcessExecutor> processExecutors = BpmExecutionSingleton.getInstance().getProcessExecutors(true);
+			for (ProcessExecutor processExecutor : processExecutors) {
+				if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
+					try {
+						stepExecutor(processExecutor);
+					} catch (Exception e) {
+						logger.warn("caught exception in thread: " + e.getClass().getCanonicalName() + " --> failing executor.");
+						if (e instanceof BpmExecutorException) {
+							processEngineListener.fail(e, processExecutor.getProcessInstance());	
+						}
+						processEngineListener.unlock();			
+						run();
+					}
+				}
+			}
+			processEngineListener.unlock();
+		}
+	}
 
+	private void handleThreadInterrupted() {
+		// TODO Auto-generated method stub
+	}
+
+	private void stepExecutor(ProcessExecutor processExecutor) throws Exception {
+		processEngineListener.checkExecutionEnded(processExecutor);
+		processEngineListener.deliverEngineState(generateEngineState(processExecutor.getProcessInstance()),
+				processExecutor.getProcessInstance());
+	}
+
+	/*
 	public void run() {
 		try {
 			while (true) {
@@ -31,10 +71,8 @@ public class ProcessEngineListenerThread extends Thread {
 				Thread.sleep(DEFAULT_STEP_MILLIS);
 				ProcessEngineState engineState = null;
 				processEngineListener.lock();
-				Set<ProcessExecutorState> distinctStates = new HashSet<ProcessExecutorState>();
 				Collection<ProcessExecutor> processExecutors = BpmExecutionSingleton.getInstance().getProcessExecutors(true);
 				for (ProcessExecutor processExecutor : processExecutors) {
-					distinctStates.add(processExecutor.getProcessExecutorState());
 					if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
 						processEngineListener.checkExecutionEnded(processExecutor);
 						engineState = generateEngineState(processExecutor.getProcessInstance());
@@ -42,15 +80,10 @@ public class ProcessEngineListenerThread extends Thread {
 								processExecutor.getProcessInstance());	
 					}
 				}
-				/*
-				if (!distinctStates.contains(ProcessExecutorState.RUNNING) && processExecutors.size() > 0) {
-					logger.info("no more running executors --> stopping thread!!");
-					stop();
-				}
-				*/
 				processEngineListener.unlock();
 			}
 		} catch (Exception e) {
+			processEngineListener.unlock();
 			logger.warn("caught exception in thread: " + e.getClass().getCanonicalName());
 			if (e instanceof InterruptedException) {
 				processEngineListener.fail(e, null);
@@ -68,6 +101,7 @@ public class ProcessEngineListenerThread extends Thread {
 			processEngineListener.unlock();
 		}
 	}
+	*/
 
 	private ProcessEngineState generateEngineState(ProcessInstance processInstance) {
 		return new ProcessEngineState().fromProcessInstance(processInstance);

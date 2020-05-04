@@ -3,6 +3,7 @@ package de.gravitex.bpm.executor.handler.base;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 
@@ -10,13 +11,13 @@ import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
-public class TaskHandler extends ProcessItemHandler<Task> {
+public class TaskHandler extends ProcessItemHandler<TaskEntity> {
 	
 	private static final Logger logger = Logger.getLogger(TaskHandler.class);
 	
 	@Override
 	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
-		Task task = castProcessItem(processItem);
+		TaskEntity task = castProcessItem(processItem);
 		logger.info("handling life cycle begin of task '"+task.getTaskDefinitionKey()+"'...");
 		invokeProcessStateChecker(task, processInstance, ExecutionPhase.BEFORE_PROCESSING);
 		finishTask(processItem, null, processInstance);
@@ -48,7 +49,7 @@ public class TaskHandler extends ProcessItemHandler<Task> {
 	}
 
 	@Override
-	protected Task castProcessItem(Object processItem) {
-		return (Task) processItem;
+	protected TaskEntity castProcessItem(Object processItem) {
+		return (TaskEntity) processItem;
 	}
 }

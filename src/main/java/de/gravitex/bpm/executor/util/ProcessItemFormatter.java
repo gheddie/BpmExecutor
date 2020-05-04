@@ -1,18 +1,26 @@
 package de.gravitex.bpm.executor.util;
 
+import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
-import org.camunda.bpm.engine.runtime.Job;
-import org.camunda.bpm.engine.task.Task;
+
+import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
 public class ProcessItemFormatter {
 
-	public static String getKey(Object itemToExecute) {
-		if (itemToExecute instanceof Task) {
-			return formatKey("TASK", ((Task) itemToExecute).getName());
-		} else if (itemToExecute instanceof Job) {
-			return formatKey("JOB", ((TimerEntity) itemToExecute).getJobHandlerConfigurationRaw());
+	public static String getKey(Object itemToExecute) throws BpmExecutorException {
+		if (itemToExecute instanceof TaskEntity) {
+			return formatKey("TASK", ((TaskEntity) itemToExecute).getName());
+		} else if (itemToExecute instanceof TimerEntity) {
+			return formatKey("TIMER", ((TimerEntity) itemToExecute).getJobHandlerConfigurationRaw());
+		} else if (itemToExecute instanceof MessageEntity) {
+			return formatKey("MESSAGE", ((MessageEntity) itemToExecute).getJobHandlerConfigurationRaw());
+		} else if (itemToExecute instanceof EventSubscriptionEntity) {
+			return formatKey("SUBSCRIPTION", ((EventSubscriptionEntity) itemToExecute).getEventName());
 		}
-		return null;
+		throw new BpmExecutorException("unable to create item key for type'" + itemToExecute.getClass().getCanonicalName() + "'!!", null,
+				null);
 	}
 
 	private static String formatKey(String s1, String s2) {

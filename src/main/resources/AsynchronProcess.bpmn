@@ -19,6 +19,9 @@
       </bpmn:timerEventDefinition>
     </bpmn:intermediateCatchEvent>
     <bpmn:serviceTask id="Task_1t1gyq1" name="Check address" camunda:asyncBefore="true" camunda:class="de.gravitex.bpm.executor.delegate.CheckAddressDelegate">
+      <bpmn:extensionElements>
+        <camunda:failedJobRetryTimeCycle>PT15S</camunda:failedJobRetryTimeCycle>
+      </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_0rmpfco</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0271pow</bpmn:outgoing>
     </bpmn:serviceTask>
