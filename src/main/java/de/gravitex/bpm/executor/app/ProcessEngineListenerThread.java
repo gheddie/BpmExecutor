@@ -58,15 +58,8 @@ public class ProcessEngineListenerThread extends Thread {
 
 	private void stepExecutor(ProcessExecutor processExecutor) throws Exception {
 		processEngineListener.checkExecutionEnded(processExecutor);
-		processEngineListener.deliverEngineState(generateProcessState(processExecutor),
+		processEngineListener.deliverProcessState(generateProcessState(processExecutor),
 				processExecutor.getProcessInstance());
-	}
-
-	/**
-	 * @deprecated Use {@link #generateProcessState(ProcessExecutor)} instead
-	 */
-	private ProcessEngineState generateEngineState(ProcessExecutor processExecutor) {
-		return generateProcessState(processExecutor);
 	}
 
 	private ProcessEngineState generateProcessState(ProcessExecutor processExecutor) {

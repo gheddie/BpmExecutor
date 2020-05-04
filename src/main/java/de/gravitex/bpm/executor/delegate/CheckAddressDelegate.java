@@ -7,7 +7,10 @@ public class CheckAddressDelegate implements JavaDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		// throw new BpmnError("123");
-		throw new NullPointerException();
+		int counter = CheckAdressSingleton.getInstance().counter(execution.getProcessInstance().getId());
+		System.out.println("counter: " + counter);
+		if (counter < 4) {
+			throw new NullPointerException();
+		}
 	}
 }

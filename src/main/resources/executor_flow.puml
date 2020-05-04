@@ -8,14 +8,15 @@ loop running executors
 ProcessEngineListenerThread -> ProcessEngineListenerThread: stepExecutor(ProcessExecutor)
 ProcessEngineListenerThread -> IProcessEngineListener : checkExecutionEnded(ProcessExecutor)
 ProcessEngineListenerThread -> ProcessEngineListenerThread: generateProcessState(ProcessExecutor)
-ProcessEngineListenerThread -> IProcessEngineListener : deliverEngineState(ProcessEngineState)
+ProcessEngineListenerThread -> IProcessEngineListener : deliverProcessState(ProcessEngineState) throws BpmExecutorException
 
 ProcessEngineListenerThread -> IProcessEngineListener : fail(Exception, ProcessInstance)
 
 loop lifecycles
 loop objects for lifecycle
 end
-IProcessEngineListener -> IProcessEngineListener : getItemHandler(Object, ProcessInstance)
+IProcessEngineListener -> IProcessEngineListener : getItemHandler(Object, ProcessInstance) throws BpmExecutorException
+IProcessEngineListener -> ProcessItemFormatter : getKey(Object) throws BpmExecutorException
 
 IProcessEngineListener -> ProcessItemHandler : handleLifeCycle/Begin/End() throws BpmExecutorException
 ProcessItemHandler -> IProcessEngineListener : invokeProcessStateChecker(Object, ProcessInstance, ExecutionPhase)

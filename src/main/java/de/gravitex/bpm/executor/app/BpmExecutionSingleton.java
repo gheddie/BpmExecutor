@@ -101,7 +101,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public void deliverEngineState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
+	public void deliverProcessState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
 		
 		ProcessEngineState processEngineState = deliveredEngineStates.get(processInstance.getId());
 		if (processEngineState == null) {
