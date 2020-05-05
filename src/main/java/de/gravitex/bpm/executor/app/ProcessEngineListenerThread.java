@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
-import de.gravitex.bpm.executor.app.listener.IProcessExecutionListener;
+import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
 import de.gravitex.bpm.executor.enumeration.ProcessExecutorState;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
@@ -14,11 +14,11 @@ public class ProcessEngineListenerThread extends Thread {
 
 	private static final long DEFAULT_STEP_MILLIS = 2500;
 
-	private IProcessExecutionListener processExecutionListener;
+	private IProcessEngineListener processEngineListener;
 
-	public ProcessEngineListenerThread(IProcessExecutionListener processExecutionListener) {
+	public ProcessEngineListenerThread(IProcessEngineListener processEngineListener) {
 		super();
-		this.processExecutionListener = processExecutionListener;
+		this.processEngineListener = processEngineListener;
 	}
 	
 	public void run() {
@@ -32,24 +32,24 @@ public class ProcessEngineListenerThread extends Thread {
 				handleThreadInterrupted();
 			}
 			// loop running executors
-			processExecutionListener.lock();
+			processEngineListener.lock();
 			Collection<ProcessExecutor> processExecutors = BpmExecutionSingleton.getInstance().getProcessExecutors();
 			for (ProcessExecutor processExecutor : processExecutors) {
 				if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
 					try {
 						stepExecutor(processExecutor);
-						processExecutionListener.stepSuceeded(processExecutor);
+						processEngineListener.stepSuceeded(processExecutor);
 					} catch (Exception e) {
 						logger.warn("caught exception in thread: " + e.getClass().getCanonicalName() + " --> failing executor.");
 						if (e instanceof BpmExecutorException) {
-							processExecutionListener.fail(e, processExecutor.getProcessInstance());	
+							processEngineListener.fail(e, processExecutor.getProcessInstance());	
 						}
-						processExecutionListener.unlock();			
+						processEngineListener.unlock();			
 						run();
 					}
 				}
 			}
-			processExecutionListener.unlock();
+			processEngineListener.unlock();
 		}
 	}
 
@@ -58,8 +58,8 @@ public class ProcessEngineListenerThread extends Thread {
 	}
 
 	private void stepExecutor(ProcessExecutor processExecutor) throws Exception {
-		processExecutionListener.checkExecutionEnded(processExecutor);
-		processExecutionListener.deliverProcessState(generateProcessState(processExecutor),
+		processEngineListener.checkExecutionEnded(processExecutor);
+		processEngineListener.deliverProcessState(generateProcessState(processExecutor),
 				processExecutor.getProcessInstance());
 	}
 

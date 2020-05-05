@@ -17,6 +17,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
+import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
 import de.gravitex.bpm.executor.app.listener.IProcessExecutionListener;
 import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
@@ -34,13 +35,15 @@ import de.gravitex.bpm.executor.util.DiffContainer;
 import de.gravitex.bpm.executor.util.ProcessItemFormatter;
 import de.gravitex.bpm.executor.util.StringUtil;
 
-public class BpmExecutionSingleton implements IProcessExecutionListener {
+public class BpmExecutionSingleton implements IProcessEngineListener {
 	
 	private static final Logger logger = Logger.getLogger(BpmExecutionSingleton.class);
 
 	private static BpmExecutionSingleton instance;
 
 	private ProcessEngine processEngine;
+	
+	private IProcessExecutionListener processExecutionListener;
 	
 	private ProcessEngineListenerThread processEngineListenerThread;
 	
@@ -319,6 +322,7 @@ public class BpmExecutionSingleton implements IProcessExecutionListener {
 		}
 		if (executionEnded) {
 			processExecutor.setProcessExecutorState(ProcessExecutorState.FINISHED);
+			processExecutionListener.processFinished();
 		}
 	}
 
@@ -352,5 +356,10 @@ public class BpmExecutionSingleton implements IProcessExecutionListener {
 
 	public List<String> getCommonMessages() {
 		return commonMessages;
+	}
+	
+	public BpmExecutionSingleton setProcessExecutionListener(IProcessExecutionListener aProcessExecutionListener) {
+		this.processExecutionListener = aProcessExecutionListener;
+		return this;
 	}
 }
