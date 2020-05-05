@@ -276,17 +276,27 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	public Collection<ProcessExecutor> getProcessExecutors(boolean withFinished) {
+		Collection<ProcessExecutor> result = null;
 		if (withFinished) {
-			return processExecutors.values();	
+			result = processExecutors.values();	
 		} else {
-			List<ProcessExecutor> result = new ArrayList<ProcessExecutor>();
+			result = new ArrayList<ProcessExecutor>();
 			for (ProcessExecutor processExecutor : processExecutors.values()) {
 				if (!(processExecutor.getProcessExecutorState().equals(ProcessExecutorState.FINISHED))) {
 					result.add(processExecutor);
 				}
 			}
-			return result;
 		}
+		for (ProcessExecutor processExecutor : result) {
+			List<String> activeActivityIds = null;
+			try {
+				activeActivityIds = processEngine.getRuntimeService().getActiveActivityIds(processExecutor.getProcessInstance().getId());	
+			} catch (Exception e) {
+				// ...
+			}
+			processExecutor.setActivity(activeActivityIds != null ? activeActivityIds.toString() : "");
+		}
+		return result;
 	}
 	
 	public boolean executionEnded(ProcessInstance processInstance) {

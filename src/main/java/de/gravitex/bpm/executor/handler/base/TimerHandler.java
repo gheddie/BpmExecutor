@@ -33,7 +33,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 		long seconds = ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date());
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isTraceIntermediateLifeCycles()) {
 			String message = formatForProcessInstance("handling timer '" + timer.getJobHandlerConfigurationRaw() + "' life cycle --> " + seconds + " seconds to go... ", processInstance);
-			BpmExecutionSingleton.getInstance().putMessage(processInstance, message, null);
+			putMessage(processInstance, message, null);
 			logger.info(message);			
 		}
 	}
@@ -57,7 +57,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 		String message = "timer " + timer.getJobHandlerConfigurationRaw() + " has reached due date ("
 				+ dateDiffInSecondsFromTarget + " seconds from target date).";
 		logger.info(message);
-		BpmExecutionSingleton.getInstance().putMessage(processInstance, message, null);
+		putMessage(processInstance, message, null);
 		invokeProcessStateChecker(timer, processInstance, ExecutionPhase.AFTER_PROCESSING);
 	}
 

@@ -9,7 +9,8 @@ public class CheckAddressDelegate implements JavaDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		int counter = CheckAdressSingleton.getInstance().counter(execution.getProcessInstance().getId());
 		System.out.println("counter: " + counter);
-		if (counter < 4) {
+		// if (counter < 1) {
+		if (counter < 100) {
 			throw new NullPointerException();
 		}
 	}

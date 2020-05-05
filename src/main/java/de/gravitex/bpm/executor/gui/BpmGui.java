@@ -114,14 +114,15 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 
 	private void fillInstances() {
 		DefaultTableModel model = new DefaultTableModel();
-		model.setColumnIdentifiers(new Object[] { "ID", "Startdatum", "Business Key", "Definition", "Status" });
+		model.setColumnIdentifiers(new Object[] { "ID", "Startdatum", "Business Key", "Definition", "Status", "Activity" });
 		for (ProcessExecutor processExecutor : BpmExecutionSingleton.getInstance().getProcessExecutors(true)) {
-			Object[] row = new Object[5];
+			Object[] row = new Object[6];
 			row[0] = processExecutor.getProcessInstance().getId();
 			row[1] = processExecutor.getStartDate();
 			row[2] = processExecutor.getBusinessKey();
 			row[3] = processExecutor.getBpmDefinition().getProcessDefinitionKey();
 			row[4] = processExecutor.getProcessExecutorState();
+			row[5] = processExecutor.getActivity();
 			model.addRow(row);
 		}
 		executionsTable.setModel(model);

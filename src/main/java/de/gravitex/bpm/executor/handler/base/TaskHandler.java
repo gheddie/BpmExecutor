@@ -30,10 +30,10 @@ public class TaskHandler extends ProcessItemHandler<TaskEntity> {
 			taskService().complete(task.getId(), variables);
 			String message = "finished task: " + task.getName() + " [ID=" + task.getId() + "]...";
 			logger.info(formatForProcessInstance(message, processInstance));
-			BpmExecutionSingleton.getInstance().putMessage(processInstance, message, null);	
+			putMessage(processInstance, message, null);	
 		} catch (Exception e) {
 			String message = "unable to finish task '"+task+"'!!";
-			BpmExecutionSingleton.getInstance().putMessage(processInstance, message, e);
+			putMessage(processInstance, message, e);
 			throw new BpmExecutorException(message, e, processInstance);
 		}
 	}

@@ -54,4 +54,8 @@ public abstract class ProcessItemHandler<T> {
 	public void increaseCounter() {
 		executionCounter++;
 	}
+	
+	protected void putMessage(ProcessInstance processInstance, String message, Throwable throwable) {
+		BpmExecutionSingleton.getInstance().putMessage(processInstance, message, throwable);
+	}
 }

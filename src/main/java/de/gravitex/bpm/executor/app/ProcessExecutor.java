@@ -22,6 +22,8 @@ public class ProcessExecutor implements IProcessProgressListener {
 	private BpmDefinition bpmDefinition;
 	
 	private ProcessExecutorState processExecutorState;
+	
+	private String activity;
 
 	public ProcessExecutor (BpmDefinition aBpmDefinition) {
 		super();
