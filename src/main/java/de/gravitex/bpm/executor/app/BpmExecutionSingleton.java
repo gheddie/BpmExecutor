@@ -15,10 +15,9 @@ import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
-import org.camunda.bpm.engine.repository.Deployment;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
-import de.gravitex.bpm.executor.app.listener.IProcessEngineListener;
+import de.gravitex.bpm.executor.app.listener.IProcessExecutionListener;
 import de.gravitex.bpm.executor.checker.base.BpmStateChecker;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.enumeration.LifeCycle;
@@ -33,8 +32,9 @@ import de.gravitex.bpm.executor.handler.base.TimerHandler;
 import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 import de.gravitex.bpm.executor.util.DiffContainer;
 import de.gravitex.bpm.executor.util.ProcessItemFormatter;
+import de.gravitex.bpm.executor.util.StringUtil;
 
-public class BpmExecutionSingleton implements IProcessEngineListener {
+public class BpmExecutionSingleton implements IProcessExecutionListener {
 	
 	private static final Logger logger = Logger.getLogger(BpmExecutionSingleton.class);
 
@@ -93,16 +93,14 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	public void deployProcess(String aBpmFileName) {
 		try {
 			// TODO check if process is already deployed!!
-			 Deployment deployment = processEngine.getRepositoryService().createDeployment().addClasspathResource(aBpmFileName).deploy();
+			 processEngine.getRepositoryService().createDeployment().addClasspathResource(aBpmFileName).deploy();
 		} catch (Exception e) {
-			// fail(e, null);
 			logger.error(e);
 			// processExecutor.setProcessExecutorState(ProcessExecutorState.DEPLOYMENT_FAILED);
 		}
 	}
 
 	public void deliverProcessState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
-		
 		ProcessEngineState processEngineState = deliveredEngineStates.get(processInstance.getId());
 		if (processEngineState == null) {
 			processEngineState = new ProcessEngineState();
@@ -141,7 +139,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	private void evaluateChanges(HashMap<Class<?>, DiffContainer> processItemChanges, ProcessInstance processInstance) {
-		
 		int changeCount = 0;
 		for (Class<?> key : processItemChanges.keySet()) {
 			changeCount += processItemChanges.get(key).getChangeCount();
@@ -157,7 +154,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	private ProcessItemHandler<?> getItemHandler(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
-		
 		String itemKey = ProcessItemFormatter.getKey(processItem);
 		ProcessItemHandler<?> customHandler = processExecutors.get(processInstance.getId()).getHandler(itemKey);
 		if (customHandler != null) {
@@ -178,6 +174,12 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		logger.error("execution for process [" + processInstance.getId() + "] failed: " + e.getMessage() + " ["
 				+ e.getClass().getCanonicalName() + "]");
 		processExecutors.get(processInstance.getId()).setProcessExecutorState(ProcessExecutorState.FAILED);
+	}
+	
+	@Override
+	public void stepSuceeded(ProcessExecutor processExecutor) {
+		putMessage(processExecutor.getProcessInstance().getId(),
+				"step suceeded [now at '" + getCurrentProcessActivities(processExecutor) + "'].", null);
 	}
 
 	public ProcessEngine getProcessEngine() {
@@ -208,9 +210,10 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public void registerProcessDefinition(String identifier, BpmDefinition bpmDefinition) {
+	public BpmExecutionSingleton registerProcessDefinition(String identifier, BpmDefinition bpmDefinition) {
 		deployProcess(bpmDefinition.getBpmFileName());
 		processDefinitions.put(identifier, bpmDefinition);
+		return this;
 	}
 
 	public synchronized void startProcess(String identifier) throws BpmExecutorException {
@@ -219,12 +222,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 			logger.info("locked ---> returning!!");
 			return;
 		}
-		
-		/*
-		if (!processEngineListenerThread.isAlive()) {
-			processEngineListenerThread.start();
-		}
-		*/
 		
 		BpmDefinition bpmDefinition = processDefinitions.get(identifier);
 		
@@ -263,7 +260,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 	
 	public ProcessExecutorSettings getProcessExecutorSettings(ProcessInstance processInstance) {
-		
 		ProcessExecutorSettings processExecutorSettings = processExecutors.get(processInstance.getId()).getBpmDefinition().getProcessExecutorSettings();
 		if (processExecutorSettings == null) {
 			return DEFAULT_EXECUTION_SETTINGS;
@@ -275,28 +271,32 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return processDefinitions.values();
 	}
 
-	public Collection<ProcessExecutor> getProcessExecutors(boolean withFinished) {
-		Collection<ProcessExecutor> result = null;
-		if (withFinished) {
-			result = processExecutors.values();	
-		} else {
-			result = new ArrayList<ProcessExecutor>();
-			for (ProcessExecutor processExecutor : processExecutors.values()) {
-				if (!(processExecutor.getProcessExecutorState().equals(ProcessExecutorState.FINISHED))) {
-					result.add(processExecutor);
-				}
-			}
-		}
+	public Collection<ProcessExecutor> getProcessExecutors() {
+		Collection<ProcessExecutor> result = processExecutors.values();
 		for (ProcessExecutor processExecutor : result) {
-			List<String> activeActivityIds = null;
-			try {
-				activeActivityIds = processEngine.getRuntimeService().getActiveActivityIds(processExecutor.getProcessInstance().getId());	
-			} catch (Exception e) {
-				// ...
-			}
-			processExecutor.setActivity(activeActivityIds != null ? activeActivityIds.toString() : "");
+			processExecutor.setActivity(getCurrentProcessActivities(processExecutor));
 		}
 		return result;
+	}
+
+	private String getCurrentProcessActivities(ProcessExecutor processExecutor) {
+		
+		if (!processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
+			logger.warn("requested current process activities for no more running process [ID="
+					+ processExecutor.getProcessInstance().getId() + "]");
+			return null;
+		}
+		logger.info("retrieving current process activities for process instance 'ID=" + processExecutor.getProcessInstance().getId()
+				+ "' [state:" + processExecutor.getProcessExecutorState() + "]");
+		List<String> activeActivityIds = null;
+		String processInstanceId = processExecutor.getProcessInstance().getId();
+		try {
+			activeActivityIds = processEngine.getRuntimeService().getActiveActivityIds(processInstanceId);	
+		} catch (Exception e) {
+			logger.warn("unable to determine current activities for process instance id '" + processInstanceId + "'!!");
+			return StringUtil.formatList(null);
+		}
+		return StringUtil.formatList(activeActivityIds);
 	}
 	
 	public boolean executionEnded(ProcessInstance processInstance) {
@@ -310,7 +310,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 
 	@Override
 	public void checkExecutionEnded(ProcessExecutor processExecutor) {
-		
 		ProcessInstance processInstance = processExecutor.getProcessInstance();
 		boolean executionEnded = executionEnded(processInstance);
 		if (executionEnded) {
@@ -323,18 +322,18 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public void putMessage(ProcessInstance processInstance, String message, Throwable t) {
+	public void putMessage(String processInstanceId, String message, Throwable t) {
 		if (t != null) {
 			message += " {" + t.getMessage() + "}";
 		}
-		if (processInstance == null) {
+		if (processInstanceId == null) {
 			commonMessages.add(message);
 			return;
 		}
-		if (processMessages.get(processInstance.getId()) == null) {
-			processMessages.put(processInstance.getId(), new ArrayList<String>());
+		if (processMessages.get(processInstanceId) == null) {
+			processMessages.put(processInstanceId, new ArrayList<String>());
 		}
-		processMessages.get(processInstance.getId()).add(message);
+		processMessages.get(processInstanceId).add(message);
 	}
 
 	public List<String> getMessages(String processInstanceId) {

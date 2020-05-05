@@ -21,7 +21,7 @@ new FormModel {
 				"gridheight": 2
 			} )
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-				name: "scrollPane2"
+				name: "scExecutionsTable"
 				add( new FormComponent( "javax.swing.JTable" ) {
 					name: "executionsTable"
 				} )

@@ -6,7 +6,7 @@ import de.gravitex.bpm.executor.app.ProcessEngineState;
 import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
-public interface IProcessEngineListener {
+public interface IProcessExecutionListener {
 
 	void deliverProcessState(ProcessEngineState processEngineState, ProcessInstance processInstance) throws BpmExecutorException;
 
@@ -17,4 +17,6 @@ public interface IProcessEngineListener {
 	void lock();
 
 	void unlock();
+
+	void stepSuceeded(ProcessExecutor processExecutor);
 }

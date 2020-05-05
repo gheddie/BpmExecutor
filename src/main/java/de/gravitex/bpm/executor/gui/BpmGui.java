@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -41,7 +42,7 @@ import de.gravitex.bpm.executor.handler.start.CollaborationTestProcessStartHandl
  * @author Stefan Schulz
  */
 public class BpmGui extends JFrame implements GuiThreadListener {
-	
+
 	private static final Logger logger = Logger.getLogger(BpmGui.class);
 
 	private static final long serialVersionUID = -8277137714910541545L;
@@ -62,6 +63,12 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 				String processInstanceId = (String) executionsTable.getValueAt(executionsTable.getSelectedRow(), 0);
 				logger.info("changed to process instance id '" + processInstanceId + "'...");
 				fillMessages(processInstanceId);
+				scrollMessagesToBottom();
+			}
+
+			private void scrollMessagesToBottom() {
+				JScrollBar verticalScrollBar = scExecutionsTable.getVerticalScrollBar();
+				verticalScrollBar.setValue(verticalScrollBar.getMaximum());
 			}
 		});
 		fillDefinitions();
@@ -80,12 +87,16 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 		btnRefresh.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fillInstances();
-				fillCommonMessages();
+				refresh();
 			}
 		});
 		guiThread = new GuiThread(this);
 		guiThread.start();
+	}
+
+	private void refresh() {
+		fillInstances();
+		fillCommonMessages();
 	}
 
 	private void fillMessages(String processInstanceId) {
@@ -97,14 +108,14 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 				Object[] row = new Object[1];
 				row[0] = message;
 				model.addRow(row);
-			}	
+			}
 		}
 		messagesTable.setModel(model);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void fillCommonMessages() {
-
-		// Fill model
+		// fill model
 		final DefaultListModel model = new DefaultListModel();
 		for (String message : BpmExecutionSingleton.getInstance().getCommonMessages()) {
 			model.addElement(message);
@@ -115,7 +126,7 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 	private void fillInstances() {
 		DefaultTableModel model = new DefaultTableModel();
 		model.setColumnIdentifiers(new Object[] { "ID", "Startdatum", "Business Key", "Definition", "Status", "Activity" });
-		for (ProcessExecutor processExecutor : BpmExecutionSingleton.getInstance().getProcessExecutors(true)) {
+		for (ProcessExecutor processExecutor : BpmExecutionSingleton.getInstance().getProcessExecutors()) {
 			Object[] row = new Object[6];
 			row[0] = processExecutor.getProcessInstance().getId();
 			row[1] = processExecutor.getStartDate();
@@ -139,7 +150,7 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 
 	public static void main(String[] args) {
 		try {
-			
+
 			BpmExecutionSingleton.getInstance().registerProcessDefinition("SimpleTestProcess",
 					new BpmDefinition(null, "SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
 							.withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
@@ -169,7 +180,7 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 		// Generated using JFormDesigner Evaluation license - Stefan Schulz
 		scrollPane1 = new JScrollPane();
 		bpmDefinitionList = new JList();
-		scrollPane2 = new JScrollPane();
+		scExecutionsTable = new JScrollPane();
 		executionsTable = new JTable();
 		tabbedPane1 = new JTabbedPane();
 		panel1 = new JPanel();
@@ -181,88 +192,90 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 		btnStartProcess = new JButton();
 		btnRefresh = new JButton();
 
-		// ======== this ========
+		//======== this ========
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new GridBagLayout());
-		((GridBagLayout) contentPane.getLayout()).columnWidths = new int[] { 199, 266, 0 };
-		((GridBagLayout) contentPane.getLayout()).rowHeights = new int[] { 263, 92, 0, 0 };
-		((GridBagLayout) contentPane.getLayout()).columnWeights = new double[] { 0.0, 1.0, 1.0E-4 };
-		((GridBagLayout) contentPane.getLayout()).rowWeights = new double[] { 0.0, 1.0, 0.0, 1.0E-4 };
+		((GridBagLayout)contentPane.getLayout()).columnWidths = new int[] {199, 266, 0};
+		((GridBagLayout)contentPane.getLayout()).rowHeights = new int[] {263, 92, 0, 0};
+		((GridBagLayout)contentPane.getLayout()).columnWeights = new double[] {0.0, 1.0, 1.0E-4};
+		((GridBagLayout)contentPane.getLayout()).rowWeights = new double[] {0.0, 1.0, 0.0, 1.0E-4};
 
-		// ======== scrollPane1 ========
+		//======== scrollPane1 ========
 		{
 			scrollPane1.setViewportView(bpmDefinitionList);
 		}
-		contentPane.add(scrollPane1, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 5), 0, 0));
+		contentPane.add(scrollPane1, new GridBagConstraints(0, 0, 1, 2, 0.0, 0.0,
+			GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+			new Insets(0, 0, 5, 5), 0, 0));
 
-		// ======== scrollPane2 ========
+		//======== scExecutionsTable ========
 		{
-			scrollPane2.setViewportView(executionsTable);
+			scExecutionsTable.setViewportView(executionsTable);
 		}
-		contentPane.add(scrollPane2, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
+		contentPane.add(scExecutionsTable, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+			GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+			new Insets(0, 0, 5, 0), 0, 0));
 
-		// ======== tabbedPane1 ========
+		//======== tabbedPane1 ========
 		{
 
-			// ======== panel1 ========
+			//======== panel1 ========
 			{
-				panel1.setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.TitledBorder(
-						new javax.swing.border.EmptyBorder(0, 0, 0, 0), "JF\u006frmDes\u0069gner \u0045valua\u0074ion",
-						javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.BOTTOM,
-						new java.awt.Font("D\u0069alog", java.awt.Font.BOLD, 12), java.awt.Color.red), panel1.getBorder()));
-				panel1.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-					@Override
-					public void propertyChange(java.beans.PropertyChangeEvent e) {
-						if ("\u0062order".equals(e.getPropertyName()))
-							throw new RuntimeException();
-					}
-				});
+				panel1.setBorder ( new javax . swing. border .CompoundBorder ( new javax . swing. border .TitledBorder ( new javax . swing. border .
+				EmptyBorder ( 0, 0 ,0 , 0) ,  "JF\u006frmDesi\u0067ner Ev\u0061luatio\u006e" , javax. swing .border . TitledBorder. CENTER ,javax . swing
+				. border .TitledBorder . BOTTOM, new java. awt .Font ( "Dialo\u0067", java .awt . Font. BOLD ,12 ) ,
+				java . awt. Color .red ) ,panel1. getBorder () ) ); panel1. addPropertyChangeListener( new java. beans .PropertyChangeListener ( )
+				{ @Override public void propertyChange (java . beans. PropertyChangeEvent e) { if( "borde\u0072" .equals ( e. getPropertyName () ) )
+				throw new RuntimeException( ) ;} } );
 				panel1.setLayout(new GridBagLayout());
-				((GridBagLayout) panel1.getLayout()).columnWidths = new int[] { 112, 0 };
-				((GridBagLayout) panel1.getLayout()).rowHeights = new int[] { 87, 0 };
-				((GridBagLayout) panel1.getLayout()).columnWeights = new double[] { 1.0, 1.0E-4 };
-				((GridBagLayout) panel1.getLayout()).rowWeights = new double[] { 1.0, 1.0E-4 };
+				((GridBagLayout)panel1.getLayout()).columnWidths = new int[] {112, 0};
+				((GridBagLayout)panel1.getLayout()).rowHeights = new int[] {87, 0};
+				((GridBagLayout)panel1.getLayout()).columnWeights = new double[] {1.0, 1.0E-4};
+				((GridBagLayout)panel1.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
 
-				// ======== scrollPane3 ========
+				//======== scrollPane3 ========
 				{
 					scrollPane3.setViewportView(messagesTable);
 				}
-				panel1.add(scrollPane3, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-						new Insets(0, 0, 0, 0), 0, 0));
+				panel1.add(scrollPane3, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+					new Insets(0, 0, 0, 0), 0, 0));
 			}
 			tabbedPane1.addTab("Prozesse", panel1);
 
-			// ======== panel2 ========
+			//======== panel2 ========
 			{
 				panel2.setLayout(new GridBagLayout());
-				((GridBagLayout) panel2.getLayout()).columnWidths = new int[] { 0, 0 };
-				((GridBagLayout) panel2.getLayout()).rowHeights = new int[] { 0, 0 };
-				((GridBagLayout) panel2.getLayout()).columnWeights = new double[] { 1.0, 1.0E-4 };
-				((GridBagLayout) panel2.getLayout()).rowWeights = new double[] { 1.0, 1.0E-4 };
+				((GridBagLayout)panel2.getLayout()).columnWidths = new int[] {0, 0};
+				((GridBagLayout)panel2.getLayout()).rowHeights = new int[] {0, 0};
+				((GridBagLayout)panel2.getLayout()).columnWeights = new double[] {1.0, 1.0E-4};
+				((GridBagLayout)panel2.getLayout()).rowWeights = new double[] {1.0, 1.0E-4};
 
-				// ======== scrollPane4 ========
+				//======== scrollPane4 ========
 				{
 					scrollPane4.setViewportView(commonMessagesList);
 				}
-				panel2.add(scrollPane4, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-						new Insets(0, 0, 0, 0), 0, 0));
+				panel2.add(scrollPane4, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+					GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+					new Insets(0, 0, 0, 0), 0, 0));
 			}
 			tabbedPane1.addTab("Allgemein", panel2);
 		}
-		contentPane.add(tabbedPane1, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 5, 0), 0, 0));
+		contentPane.add(tabbedPane1, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+			GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+			new Insets(0, 0, 5, 0), 0, 0));
 
-		// ---- btnStartProcess ----
+		//---- btnStartProcess ----
 		btnStartProcess.setText("Start process");
-		contentPane.add(btnStartProcess, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 5), 0, 0));
+		contentPane.add(btnStartProcess, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+			GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+			new Insets(0, 0, 0, 5), 0, 0));
 
-		// ---- btnRefresh ----
+		//---- btnRefresh ----
 		btnRefresh.setText("Aktualisieren");
-		contentPane.add(btnRefresh, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-				new Insets(0, 0, 0, 0), 0, 0));
+		contentPane.add(btnRefresh, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0,
+			GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+			new Insets(0, 0, 0, 0), 0, 0));
 		pack();
 		setLocationRelativeTo(getOwner());
 		// JFormDesigner - End of component initialization //GEN-END:initComponents
@@ -272,7 +285,7 @@ public class BpmGui extends JFrame implements GuiThreadListener {
 	// Generated using JFormDesigner Evaluation license - Stefan Schulz
 	private JScrollPane scrollPane1;
 	private JList bpmDefinitionList;
-	private JScrollPane scrollPane2;
+	private JScrollPane scExecutionsTable;
 	private JTable executionsTable;
 	private JTabbedPane tabbedPane1;
 	private JPanel panel1;

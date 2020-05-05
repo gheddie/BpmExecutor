@@ -56,6 +56,6 @@ public abstract class ProcessItemHandler<T> {
 	}
 	
 	protected void putMessage(ProcessInstance processInstance, String message, Throwable throwable) {
-		BpmExecutionSingleton.getInstance().putMessage(processInstance, message, throwable);
+		BpmExecutionSingleton.getInstance().putMessage(processInstance != null ? processInstance.getId() : null, message, throwable);
 	}
 }

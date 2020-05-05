@@ -2,19 +2,19 @@ package de.gravitex.bpm.executor.delegate;
 
 import java.util.HashMap;
 
-public class CheckAdressSingleton {
+public class CheckAdressLogicSingleton {
 
-	private static CheckAdressSingleton instance;
+	private static CheckAdressLogicSingleton instance;
 	
 	private HashMap<String, CheckAddressObject> checkAddressObjects = new HashMap<String, CheckAddressObject>();
 	
-	private CheckAdressSingleton() {
+	private CheckAdressLogicSingleton() {
 		super();
 	}
 
-	public static CheckAdressSingleton getInstance() {
+	public static CheckAdressLogicSingleton getInstance() {
 		if (instance == null) {
-			instance = new CheckAdressSingleton();
+			instance = new CheckAdressLogicSingleton();
 		}
 		return instance;
 	}
