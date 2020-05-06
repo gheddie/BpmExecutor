@@ -42,7 +42,7 @@ public class ProcessEngineListenerThread extends Thread {
 						e.printStackTrace();
 						logger.warn("caught exception in thread: " + e.getClass().getCanonicalName() + " --> failing executor.");
 						if (e instanceof BpmExecutorException) {
-							processEngineListener.fail(e, processExecutor.getProcessInstance());	
+							processEngineListener.fail(processExecutor, e);	
 						}
 						processEngineListener.unlock();			
 						run();

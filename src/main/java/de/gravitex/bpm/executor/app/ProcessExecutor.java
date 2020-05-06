@@ -20,7 +20,7 @@ public class ProcessExecutor {
 	
 	private String businessKey;
 
-	private BpmDefinition bpmDefinition;
+	private BpmnDefinition bpmnDefinition;
 	
 	private ProcessExecutorState processExecutorState;
 	
@@ -28,21 +28,21 @@ public class ProcessExecutor {
 
 	private List<String> pathElements = new ArrayList<String>();
 
-	public ProcessExecutor (BpmDefinition aBpmDefinition) {
+	public ProcessExecutor (BpmnDefinition aBpmDefinition) {
 		super();
-		this.bpmDefinition = aBpmDefinition;
+		this.bpmnDefinition = aBpmDefinition;
 	}
 
 	public ProcessItemHandler<?> getHandler(String itemKey) {
-		return bpmDefinition.getCustomProcessItemHandlers().get(itemKey);
+		return bpmnDefinition.getCustomProcessItemHandlers().get(itemKey);
 	}
 
 	public BpmStateChecker getChecker(String itemKey) {
-		return bpmDefinition.getBpmStateCheckers().get(itemKey);
+		return bpmnDefinition.getBpmStateCheckers().get(itemKey);
 	}
 	
 	public String toString() {
-		return bpmDefinition.getProcessDefinitionKey() + " [ID=" + processInstance.getId() + "]";
+		return bpmnDefinition.getProcessDefinitionKey() + " [ID=" + processInstance.getId() + "]";
 	}
 
 	public void addPathElement(String pathElement) {

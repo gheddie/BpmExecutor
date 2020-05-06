@@ -1,5 +1,7 @@
 package de.gravitex.bpm.executor.app.listener;
 
+import de.gravitex.bpm.executor.app.ProcessExecutor;
+
 /**
  * Used to listen to a {@link IProcessEngineListener}.
  * 
@@ -8,5 +10,7 @@ package de.gravitex.bpm.executor.app.listener;
  */
 public interface IProcessExecutionListener {
 
-	void processFinished();
+	void processFinished(ProcessExecutor processExecutor);
+
+	void processFailed(ProcessExecutor processExecutor);
 }

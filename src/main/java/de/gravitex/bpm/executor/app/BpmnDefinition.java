@@ -10,7 +10,7 @@ import de.gravitex.bpm.executor.settings.ProcessExecutorSettings;
 import lombok.Data;
 
 @Data
-public class BpmDefinition {
+public class BpmnDefinition {
 
 	private ProcessExecutorSettings processExecutorSettings;
 	
@@ -18,20 +18,20 @@ public class BpmDefinition {
 	
 	private HashMap<String, BpmStateChecker> bpmStateCheckers = new HashMap<String, BpmStateChecker>();
 	
-	private String bpmFileName;
+	private String bpmnFileName;
 	
 	private String processDefinitionKey;
 
 	private IProcessStartHandler processStartHandler;
 	
-	public BpmDefinition(ProcessExecutorSettings processExecutorSettings, String bpmFileName, String processDefinitionKey) {
+	public BpmnDefinition(ProcessExecutorSettings aProcessExecutorSettings, String aBpmnFileName, String aProcessDefinitionKey) {
 		super();
-		this.processExecutorSettings = processExecutorSettings;
-		this.bpmFileName = bpmFileName;
-		this.processDefinitionKey = processDefinitionKey;
+		this.processExecutorSettings = aProcessExecutorSettings;
+		this.bpmnFileName = aBpmnFileName;
+		this.processDefinitionKey = aProcessDefinitionKey;
 	}
 	
-	public BpmDefinition withCustomHandler(String itemKey, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
+	public BpmnDefinition withCustomHandler(String itemKey, ProcessItemHandler<?> processItemHandler) throws BpmExecutorException {
 		
 		if (processItemHandler == null) {
 			throw new BpmExecutorException("cannot set a [NULL] custom handler!!", null, null);
@@ -40,7 +40,7 @@ public class BpmDefinition {
 		return this;
 	}
 	
-	public BpmDefinition withBpmStateChecker(String itemKey, BpmStateChecker bpmStateChecker) throws BpmExecutorException {
+	public BpmnDefinition withBpmStateChecker(String itemKey, BpmStateChecker bpmStateChecker) throws BpmExecutorException {
 		
 		if (bpmStateChecker == null) {
 			throw new BpmExecutorException("cannot set a [NULL] state checker!!", null, null);
@@ -49,7 +49,7 @@ public class BpmDefinition {
 		return this;
 	}
 	
-	public BpmDefinition withSettings(ProcessExecutorSettings aProcessExecutorSettings) {
+	public BpmnDefinition withSettings(ProcessExecutorSettings aProcessExecutorSettings) {
 		this.processExecutorSettings = aProcessExecutorSettings;
 		return this;
 	}
@@ -58,7 +58,7 @@ public class BpmDefinition {
 		return processDefinitionKey;
 	}
 
-	public BpmDefinition withStartHandler(IProcessStartHandler aProcessStartHandler) {
+	public BpmnDefinition withStartHandler(IProcessStartHandler aProcessStartHandler) {
 		this.processStartHandler = aProcessStartHandler;
 		return this;
 	}

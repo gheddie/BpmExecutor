@@ -63,7 +63,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 
 	private HashMap<String, ProcessExecutor> processExecutors = new HashMap<String, ProcessExecutor>();
 	
-	private HashMap<String, BpmDefinition> processDefinitions = new HashMap<String, BpmDefinition>();
+	private HashMap<String, BpmnDefinition> processDefinitions = new HashMap<String, BpmnDefinition>();
 
 	private HashMap<String, List<String>> processMessages = new HashMap<String, List<String>>();
 	
@@ -173,10 +173,14 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 
 	@Override
-	public void fail(Exception e, ProcessInstance processInstance) {
-		logger.error("execution for process [" + processInstance.getId() + "] failed: " + e.getMessage() + " ["
-				+ e.getClass().getCanonicalName() + "]");
+	public void fail(ProcessExecutor processExecutor, Throwable throwable) {
+		ProcessInstance processInstance = processExecutor.getProcessInstance();
+		logger.error("execution for process [" + processInstance.getId() + "] failed: " + throwable.getMessage() + " ["
+				+ throwable.getClass().getCanonicalName() + "]");
 		processExecutors.get(processInstance.getId()).setProcessExecutorState(ProcessExecutorState.FAILED);
+		if (processExecutionListener != null) {
+			processExecutionListener.processFailed(processExecutor);	
+		}
 	}
 	
 	public ProcessEngine getProcessEngine() {
@@ -203,9 +207,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public BpmExecutionSingleton registerProcessDefinition(BpmDefinition bpmDefinition) {
-		deployProcess(bpmDefinition.getBpmFileName());
-		processDefinitions.put(bpmDefinition.getProcessDefinitionKey(), bpmDefinition);
+	public BpmExecutionSingleton registerProcessDefinition(BpmnDefinition bpmnDefinition) {
+		deployProcess(bpmnDefinition.getBpmnFileName());
+		processDefinitions.put(bpmnDefinition.getProcessDefinitionKey(), bpmnDefinition);
 		return this;
 	}
 
@@ -216,9 +220,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 			return;
 		}
 		
-		BpmDefinition bpmDefinition = processDefinitions.get(identifier);
+		BpmnDefinition bpmnDefinition = processDefinitions.get(identifier);
 		
-		if (bpmDefinition == null) {
+		if (bpmnDefinition == null) {
 			throw new BpmExecutorException("no bpm definition found for key '"+identifier+"'!!", null, null);
 		}
 		
@@ -227,17 +231,17 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 			
 			ProcessInstance processInstance = null;
 			
-			IProcessStartHandler processStartHandler = bpmDefinition.getProcessStartHandler();
+			IProcessStartHandler processStartHandler = bpmnDefinition.getProcessStartHandler();
 			if (processStartHandler != null) {
-				processInstance = processStartHandler.startProcess(processEngine, bpmDefinition.getProcessDefinitionKey(), businessKey);
+				processInstance = processStartHandler.startProcess(processEngine, bpmnDefinition.getProcessDefinitionKey(), businessKey);
 			} else {
-				processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(bpmDefinition.getProcessDefinitionKey(),
+				processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(bpmnDefinition.getProcessDefinitionKey(),
 						businessKey);
 			}
 			
 			logger.info(formatForProcessInstance("generated business key: " + businessKey, processInstance));
 			
-			ProcessExecutor processExecutor = new ProcessExecutor(bpmDefinition);
+			ProcessExecutor processExecutor = new ProcessExecutor(bpmnDefinition);
 			
 			processExecutor.setStartDate(new Date());
 			
@@ -253,14 +257,14 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	}
 	
 	public ProcessExecutorSettings getProcessExecutorSettings(ProcessInstance processInstance) {
-		ProcessExecutorSettings processExecutorSettings = processExecutors.get(processInstance.getId()).getBpmDefinition().getProcessExecutorSettings();
+		ProcessExecutorSettings processExecutorSettings = processExecutors.get(processInstance.getId()).getBpmnDefinition().getProcessExecutorSettings();
 		if (processExecutorSettings == null) {
 			return DEFAULT_EXECUTION_SETTINGS;
 		}
 		return processExecutorSettings;
 	}
 
-	public Collection<BpmDefinition> getBpmDefinitions() {
+	public Collection<BpmnDefinition> getBpmDefinitions() {
 		return processDefinitions.values();
 	}
 
@@ -326,7 +330,7 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		if (executionEnded) {
 			processExecutor.setProcessExecutorState(ProcessExecutorState.FINISHED);
 			if (processExecutionListener != null) {
-				processExecutionListener.processFinished();	
+				processExecutionListener.processFinished(processExecutor);	
 			}
 		}
 	}

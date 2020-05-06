@@ -29,7 +29,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.apache.log4j.Logger;
 
-import de.gravitex.bpm.executor.app.BpmDefinition;
+import de.gravitex.bpm.executor.app.BpmnDefinition;
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
 import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.checker.TaskT1BpmChecker;
@@ -76,7 +76,7 @@ public class BpmGui extends JFrame {
 		btnStartProcess.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String identifier = ((BpmDefinition) bpmDefinitionList.getSelectedValue()).getProcessDefinitionKey();
+				String identifier = ((BpmnDefinition) bpmDefinitionList.getSelectedValue()).getProcessDefinitionKey();
 				try {
 					BpmExecutionSingleton.getInstance().startProcess(identifier);
 				} catch (BpmExecutorException e1) {
@@ -131,7 +131,7 @@ public class BpmGui extends JFrame {
 			row[0] = processExecutor.getProcessInstance().getId();
 			row[1] = processExecutor.getStartDate();
 			row[2] = processExecutor.getBusinessKey();
-			row[3] = processExecutor.getBpmDefinition().getProcessDefinitionKey();
+			row[3] = processExecutor.getBpmnDefinition().getProcessDefinitionKey();
 			row[4] = processExecutor.getProcessExecutorState();
 			row[5] = processExecutor.getActivity();
 			model.addRow(row);
@@ -142,8 +142,8 @@ public class BpmGui extends JFrame {
 	private void fillDefinitions() {
 
 		final DefaultListModel model = new DefaultListModel();
-		for (BpmDefinition bpmDefinition : BpmExecutionSingleton.getInstance().getBpmDefinitions()) {
-			model.addElement(bpmDefinition);
+		for (BpmnDefinition bpmnDefinition : BpmExecutionSingleton.getInstance().getBpmDefinitions()) {
+			model.addElement(bpmnDefinition);
 		}
 		bpmDefinitionList.setModel(model);
 	}
@@ -151,17 +151,17 @@ public class BpmGui extends JFrame {
 	public static void main(String[] args) {
 		try {
 			BpmExecutionSingleton.getInstance().registerProcessDefinition(
-					new BpmDefinition(ProcessExecutorSettings.fromValues(1000, false, true), "SimpleTestProcess.bpmn", "SimpleTestProcess")
+					new BpmnDefinition(ProcessExecutorSettings.fromValues(1000, false, true), "SimpleTestProcess.bpmn", "SimpleTestProcess")
 							.withCustomHandler("TASK#T1", new TaskT1Handler()).withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition(new BpmDefinition(null, "AnotherProcess.bpmn", "AnotherProcess")
+			BpmExecutionSingleton.getInstance().registerProcessDefinition(new BpmnDefinition(null, "AnotherProcess.bpmn", "AnotherProcess")
 					.withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
 			BpmExecutionSingleton.getInstance().registerProcessDefinition(
-					new BpmDefinition(null, "LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
+					new BpmnDefinition(null, "LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
 			BpmExecutionSingleton.getInstance()
-					.registerProcessDefinition(new BpmDefinition(null, "collaborationTest.bpmn", "DEF_MAIN_PROCESS")
+					.registerProcessDefinition(new BpmnDefinition(null, "collaborationTest.bpmn", "DEF_MAIN_PROCESS")
 							.withStartHandler(new CollaborationTestProcessStartHandler()));
 			BpmExecutionSingleton.getInstance()
-					.registerProcessDefinition(new BpmDefinition(null, "AsynchronProcess.bpmn", "AsynchronProcess"));
+					.registerProcessDefinition(new BpmnDefinition(null, "AsynchronProcess.bpmn", "AsynchronProcess"));
 
 			BpmGui bpmGui = new BpmGui();
 			bpmGui.setSize(900, 600);

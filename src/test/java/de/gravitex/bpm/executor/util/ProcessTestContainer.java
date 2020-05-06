@@ -1,7 +1,10 @@
 package de.gravitex.bpm.executor.util;
 
-import de.gravitex.bpm.executor.app.BpmDefinition;
+import java.util.List;
+
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+import de.gravitex.bpm.executor.app.BpmnDefinition;
+import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.app.listener.IProcessExecutionListener;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import lombok.Data;
@@ -9,29 +12,53 @@ import lombok.Data;
 @Data
 public class ProcessTestContainer implements IProcessExecutionListener {
 	
-	private static final String PROCESS_DEFINITION_ASYNCHRON_PROCESS = "AsynchronProcess";
-	
 	private boolean processFinished = false;
+	
+	private boolean processFailed = false;
+	
+	private BpmnDefinition bpmnDefinition;
+
+	private ProcessExecutor processExecutor;
+
+	public ProcessTestContainer(BpmnDefinition aBpmnDefinition) {
+		super();
+		this.bpmnDefinition = aBpmnDefinition;
+	}
 
 	@Override
-	public void processFinished() {
+	public void processFinished(ProcessExecutor aProcessExecutor) {
 		processFinished = true;
+		this.processExecutor = aProcessExecutor;
+	}
+	
+	@Override
+	public void processFailed(ProcessExecutor aProcessExecutor) {
+		processFailed = true;
+		this.processExecutor = aProcessExecutor;
 	}
 
 	public void startProcess() {
 		try {
 			BpmExecutionSingleton.getInstance().setProcessExecutionListener(this)
-					.registerProcessDefinition(new BpmDefinition(null, "AsynchronProcess.bpmn", PROCESS_DEFINITION_ASYNCHRON_PROCESS))
-					.startProcess(PROCESS_DEFINITION_ASYNCHRON_PROCESS);
+					.registerProcessDefinition(bpmnDefinition)
+					.startProcess(bpmnDefinition.getProcessDefinitionKey());
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();
 		}
-		while (!processFinished) {
+		while (run()) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 			}
 		}
+	}
+
+	private boolean run() {
+		return (processFinished == false && processFailed == false);
+	}
+
+	public List<String> getProcessPath() {
+		return processExecutor.getPathElements();
 	}
 }
