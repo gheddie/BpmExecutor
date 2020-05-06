@@ -203,9 +203,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public BpmExecutionSingleton registerProcessDefinition(String identifier, BpmDefinition bpmDefinition) {
+	public BpmExecutionSingleton registerProcessDefinition(BpmDefinition bpmDefinition) {
 		deployProcess(bpmDefinition.getBpmFileName());
-		processDefinitions.put(identifier, bpmDefinition);
+		processDefinitions.put(bpmDefinition.getProcessDefinitionKey(), bpmDefinition);
 		return this;
 	}
 

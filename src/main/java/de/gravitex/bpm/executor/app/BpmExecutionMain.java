@@ -12,14 +12,15 @@ public class BpmExecutionMain {
 
 	public static void main(String[] args) {
 		try {
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("SimpleTestProcess",
-					new BpmDefinition(DEFAULT_SETTINGS, "SimpleTestProcess.bpmn", "SimpleTestProcess").withCustomHandler("TASK#T1", new TaskT1Handler())
-							.withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("AnotherProcess",
-					new BpmDefinition(DEFAULT_SETTINGS, "AnotherProcess.bpmn", "AnotherProcess").withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("LoopProcess",
-					new BpmDefinition(DEFAULT_SETTINGS, "LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
-			
+			BpmExecutionSingleton.getInstance()
+					.registerProcessDefinition(new BpmDefinition(DEFAULT_SETTINGS, "SimpleTestProcess.bpmn", "SimpleTestProcess")
+							.withCustomHandler("TASK#T1", new TaskT1Handler()).withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
+			BpmExecutionSingleton.getInstance()
+					.registerProcessDefinition(new BpmDefinition(DEFAULT_SETTINGS, "AnotherProcess.bpmn", "AnotherProcess")
+							.withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
+			BpmExecutionSingleton.getInstance()
+					.registerProcessDefinition(new BpmDefinition(DEFAULT_SETTINGS, "LoopProcess.bpmn", "LoopProcess")
+							.withCustomHandler("TASK#TM", new TaskTMHandler()));
 			BpmExecutionSingleton.getInstance().startProcess("SimpleTestProcess");
 		} catch (Exception e) {
 			e.printStackTrace();

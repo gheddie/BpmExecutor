@@ -21,8 +21,7 @@ public class ProcessTestContainer implements IProcessExecutionListener {
 	public void startProcess() {
 		try {
 			BpmExecutionSingleton.getInstance().setProcessExecutionListener(this)
-					.registerProcessDefinition(PROCESS_DEFINITION_ASYNCHRON_PROCESS,
-							new BpmDefinition(null, "AsynchronProcess.bpmn", PROCESS_DEFINITION_ASYNCHRON_PROCESS))
+					.registerProcessDefinition(new BpmDefinition(null, "AsynchronProcess.bpmn", PROCESS_DEFINITION_ASYNCHRON_PROCESS))
 					.startProcess(PROCESS_DEFINITION_ASYNCHRON_PROCESS);
 		} catch (BpmExecutorException e) {
 			e.printStackTrace();

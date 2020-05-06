@@ -150,20 +150,18 @@ public class BpmGui extends JFrame {
 
 	public static void main(String[] args) {
 		try {
-
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("SimpleTestProcess",
+			BpmExecutionSingleton.getInstance().registerProcessDefinition(
 					new BpmDefinition(ProcessExecutorSettings.fromValues(1000, false, true), "SimpleTestProcess.bpmn", "SimpleTestProcess")
 							.withCustomHandler("TASK#T1", new TaskT1Handler()).withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("AnotherProcess",
-					new BpmDefinition(null, "AnotherProcess.bpmn", "AnotherProcess").withBpmStateChecker("TASK#TX",
-							new TaskTxBpmChecker()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("LoopProcess",
+			BpmExecutionSingleton.getInstance().registerProcessDefinition(new BpmDefinition(null, "AnotherProcess.bpmn", "AnotherProcess")
+					.withBpmStateChecker("TASK#TX", new TaskTxBpmChecker()));
+			BpmExecutionSingleton.getInstance().registerProcessDefinition(
 					new BpmDefinition(null, "LoopProcess.bpmn", "LoopProcess").withCustomHandler("TASK#TM", new TaskTMHandler()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("DEF_MAIN_PROCESS",
-					new BpmDefinition(null, "collaborationTest.bpmn", "DEF_MAIN_PROCESS")
+			BpmExecutionSingleton.getInstance()
+					.registerProcessDefinition(new BpmDefinition(null, "collaborationTest.bpmn", "DEF_MAIN_PROCESS")
 							.withStartHandler(new CollaborationTestProcessStartHandler()));
-			BpmExecutionSingleton.getInstance().registerProcessDefinition("AsynchronProcess",
-					new BpmDefinition(null, "AsynchronProcess.bpmn", "AsynchronProcess"));
+			BpmExecutionSingleton.getInstance()
+					.registerProcessDefinition(new BpmDefinition(null, "AsynchronProcess.bpmn", "AsynchronProcess"));
 
 			BpmGui bpmGui = new BpmGui();
 			bpmGui.setSize(900, 600);
