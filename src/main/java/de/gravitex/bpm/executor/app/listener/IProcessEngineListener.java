@@ -17,6 +17,4 @@ public interface IProcessEngineListener {
 	void lock();
 
 	void unlock();
-
-	void stepSuceeded(ProcessExecutor processExecutor);
 }

@@ -179,12 +179,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		processExecutors.get(processInstance.getId()).setProcessExecutorState(ProcessExecutorState.FAILED);
 	}
 	
-	@Override
-	public void stepSuceeded(ProcessExecutor processExecutor) {
-		putMessage(processExecutor.getProcessInstance().getId(),
-				"step suceeded [now at '" + getCurrentProcessActivities(processExecutor) + "'].", null);
-	}
-
 	public ProcessEngine getProcessEngine() {
 		return processEngine;
 	}
@@ -270,10 +264,23 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		return processDefinitions.values();
 	}
 
-	public Collection<ProcessExecutor> getProcessExecutors() {
-		Collection<ProcessExecutor> result = processExecutors.values();
+	public List<ProcessExecutor> getProcessExecutors(boolean onlyRunning) {
+		
+		List<ProcessExecutor> result = null;
+		if (onlyRunning) {
+			result = new ArrayList<ProcessExecutor>();
+			for (ProcessExecutor processExecutor : processExecutors.values()) {
+				if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
+					result.add(processExecutor);
+				}
+			}
+		} else {
+			result = new ArrayList<ProcessExecutor>(processExecutors.values());
+		}
 		for (ProcessExecutor processExecutor : result) {
-			processExecutor.setActivity(getCurrentProcessActivities(processExecutor));
+			if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
+				processExecutor.setActivity(getCurrentProcessActivities(processExecutor));	
+			}
 		}
 		return result;
 	}
@@ -318,7 +325,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 		if (executionEnded) {
 			processExecutor.setProcessExecutorState(ProcessExecutorState.FINISHED);
-			processExecutionListener.processFinished();
+			if (processExecutionListener != null) {
+				processExecutionListener.processFinished();	
+			}
 		}
 	}
 

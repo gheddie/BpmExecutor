@@ -33,13 +33,13 @@ public class ProcessEngineListenerThread extends Thread {
 			}
 			// loop running executors
 			processEngineListener.lock();
-			Collection<ProcessExecutor> processExecutors = BpmExecutionSingleton.getInstance().getProcessExecutors();
+			Collection<ProcessExecutor> processExecutors = BpmExecutionSingleton.getInstance().getProcessExecutors(true);
 			for (ProcessExecutor processExecutor : processExecutors) {
 				if (processExecutor.getProcessExecutorState().equals(ProcessExecutorState.RUNNING)) {
 					try {
 						stepExecutor(processExecutor);
-						processEngineListener.stepSuceeded(processExecutor);
 					} catch (Exception e) {
+						e.printStackTrace();
 						logger.warn("caught exception in thread: " + e.getClass().getCanonicalName() + " --> failing executor.");
 						if (e instanceof BpmExecutorException) {
 							processEngineListener.fail(e, processExecutor.getProcessInstance());	
@@ -58,8 +58,8 @@ public class ProcessEngineListenerThread extends Thread {
 	}
 
 	private void stepExecutor(ProcessExecutor processExecutor) throws Exception {
-		processEngineListener.checkExecutionEnded(processExecutor);
 		processEngineListener.deliverProcessState(generateProcessState(processExecutor), processExecutor);
+		processEngineListener.checkExecutionEnded(processExecutor);
 	}
 
 	private ProcessEngineState generateProcessState(ProcessExecutor processExecutor) {

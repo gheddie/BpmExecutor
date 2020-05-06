@@ -126,7 +126,7 @@ public class BpmGui extends JFrame {
 	private void fillInstances() {
 		DefaultTableModel model = new DefaultTableModel();
 		model.setColumnIdentifiers(new Object[] { "ID", "Startdatum", "Business Key", "Definition", "Status", "Activity" });
-		for (ProcessExecutor processExecutor : BpmExecutionSingleton.getInstance().getProcessExecutors()) {
+		for (ProcessExecutor processExecutor : BpmExecutionSingleton.getInstance().getProcessExecutors(false)) {
 			Object[] row = new Object[6];
 			row[0] = processExecutor.getProcessInstance().getId();
 			row[1] = processExecutor.getStartDate();
@@ -152,7 +152,7 @@ public class BpmGui extends JFrame {
 		try {
 
 			BpmExecutionSingleton.getInstance().registerProcessDefinition("SimpleTestProcess",
-					new BpmDefinition(ProcessExecutorSettings.fromValues(1000, true, true), "SimpleTestProcess.bpmn", "SimpleTestProcess")
+					new BpmDefinition(ProcessExecutorSettings.fromValues(1000, false, true), "SimpleTestProcess.bpmn", "SimpleTestProcess")
 							.withCustomHandler("TASK#T1", new TaskT1Handler()).withBpmStateChecker("TASK#T1", new TaskT1BpmChecker()));
 			BpmExecutionSingleton.getInstance().registerProcessDefinition("AnotherProcess",
 					new BpmDefinition(null, "AnotherProcess.bpmn", "AnotherProcess").withBpmStateChecker("TASK#TX",
