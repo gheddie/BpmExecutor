@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import de.gravitex.bpm.executor.util.ProcessUtil;
@@ -16,21 +17,24 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	private static final Logger logger = Logger.getLogger(TimerHandler.class);
 
 	@Override
-	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+	public final void handleLifeCycleBegin(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException {
 		
+		ProcessInstance processInstance = processExecutor.getProcessInstance();
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isFireTimersImmediately()) {
 			TimerEntity timer = castProcessItem(processItem);
 			invokeProcessStateChecker(timer, processInstance, ExecutionPhase.BEFORE_PROCESSING);
 			managementService().executeJob(timer.getId());
+			processExecutor.addPathElement(timer.getJobHandlerConfigurationRaw());
 			logger.info("fired timer '" + timer.getJobHandlerConfigurationRaw() + "' immediately (for given settings)...");
 			invokeProcessStateChecker(timer, processInstance, ExecutionPhase.AFTER_PROCESSING);
 		}
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+	public final void handleLifeCycle(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException {
 		TimerEntity timer = castProcessItem(processItem);
 		long seconds = ProcessUtil.getDateDiffInSeconds(timer.getDuedate(), new Date());
+		ProcessInstance processInstance = processExecutor.getProcessInstance();
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isTraceIntermediateLifeCycles()) {
 			String message = formatForProcessInstance("handling timer '" + timer.getJobHandlerConfigurationRaw() + "' life cycle --> " + seconds + " seconds to go... ", processInstance);
 			putMessage(processInstance, message, null);
@@ -39,8 +43,9 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+	public final void handleLifeCycleEnd(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException {
 		// TODO how to handle exection phase 'BEFORE_RPOCESSING'?
+		ProcessInstance processInstance = processExecutor.getProcessInstance();
 		if (BpmExecutionSingleton.getInstance().getProcessExecutorSettings(processInstance).isFireTimersImmediately()) {
 			return;
 		}
@@ -59,6 +64,7 @@ public class TimerHandler extends ProcessItemHandler<TimerEntity> {
 		logger.info(message);
 		putMessage(processInstance, message, null);
 		invokeProcessStateChecker(timer, processInstance, ExecutionPhase.AFTER_PROCESSING);
+		processExecutor.addPathElement(timer.getJobHandlerConfigurationRaw());
 	}
 
 	@Override

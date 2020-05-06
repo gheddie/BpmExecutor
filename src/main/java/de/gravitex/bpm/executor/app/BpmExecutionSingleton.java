@@ -103,22 +103,22 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		}
 	}
 
-	public void deliverProcessState(ProcessEngineState newEngineState, ProcessInstance processInstance) throws BpmExecutorException {
-		ProcessEngineState processEngineState = deliveredEngineStates.get(processInstance.getId());
+	public void deliverProcessState(ProcessEngineState newEngineState, ProcessExecutor processExecutor) throws BpmExecutorException {
+		ProcessEngineState processEngineState = deliveredEngineStates.get(processExecutor.getProcessInstance().getId());
 		if (processEngineState == null) {
 			processEngineState = new ProcessEngineState();
 		}
 		HashMap<Class<?>, DiffContainer> diff = processEngineState.compareTo(newEngineState);
-		evaluateChanges(diff, processInstance);
+		evaluateChanges(diff, processExecutor.getProcessInstance());
 		DiffContainer diffContainer = null;
 		for (Class<?> clazz : diff.keySet()) {
 			diffContainer = diff.get(clazz);
 			for (LifeCycle lifeCycle : diffContainer.getItems().keySet()) {
 				for (Object processItem : diffContainer.getItems().get(lifeCycle)) {
-					ProcessItemHandler<?> handler = getItemHandler(processItem, processInstance);
+					ProcessItemHandler<?> handler = getItemHandler(processItem, processExecutor.getProcessInstance());
 					if (handler == null) {
 						throw new BpmExecutorException(
-								"no handler found for process item type: " + processItem.getClass().getCanonicalName(), null, processInstance);
+								"no handler found for process item type: " + processItem.getClass().getCanonicalName(), null, processExecutor.getProcessInstance());
 					} else {
 						logger.info("executing handler of class '" + handler.getClass().getSimpleName() + "' [execution counter="
 								+ handler.getExecutionCounter() + "]...");
@@ -126,19 +126,19 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 					// logger.info("handling object: " + handler.format(processItem) + ", diff type: " + lifeCycle);
 					switch (lifeCycle) {
 					case CREATED:
-						handler.handleLifeCycleBegin(processItem, processInstance);
+						handler.handleLifeCycleBegin(processItem, processExecutor);
 						break;
 					case PERSISTENT:
-						handler.handleLifeCycle(processItem, processInstance);	
+						handler.handleLifeCycle(processItem, processExecutor);	
 						break;
 					case REMOVED:
-						handler.handleLifeCycleEnd(processItem, processInstance);
+						handler.handleLifeCycleEnd(processItem, processExecutor);
 						break;
 					}
 				}
 			}
 		}
-		deliveredEngineStates.put(processInstance.getId(), newEngineState);
+		deliveredEngineStates.put(processExecutor.getProcessInstance().getId(), newEngineState);
 	}
 
 	private void evaluateChanges(HashMap<Class<?>, DiffContainer> processItemChanges, ProcessInstance processInstance) {
@@ -187,10 +187,6 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 
 	public ProcessEngine getProcessEngine() {
 		return processEngine;
-	}
-
-	public String getBusinessKey(ProcessInstance processInstance) {
-		return processExecutors.get(processInstance.getId()).getBusinessKey();
 	}
 
 	public void invokeProcessStateChecker(Object processItem, ProcessInstance processInstance, ExecutionPhase executionPhase)
@@ -361,5 +357,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 	public BpmExecutionSingleton setProcessExecutionListener(IProcessExecutionListener aProcessExecutionListener) {
 		this.processExecutionListener = aProcessExecutionListener;
 		return this;
+	}
+
+	public List<String> getProcessPath(String processInstanceId) {
+		return processExecutors.get(processInstanceId).getPathElements();
 	}
 }

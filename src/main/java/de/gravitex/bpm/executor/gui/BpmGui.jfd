@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.GridBagLayout ) {
 			"$columnSpecs": "194, 266:1.0"
-			"$rowSpecs": "258, 87:1.0, 0"
+			"$rowSpecs": "258, 0, 87:1.0, 0"
 			"$hGap": 5
 			"$vGap": 5
 			"$alignLeft": true
@@ -18,7 +18,7 @@ new FormModel {
 					name: "bpmDefinitionList"
 				} )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridheight": 2
+				"gridheight": 3
 			} )
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 				name: "scExecutionsTable"
@@ -27,6 +27,12 @@ new FormModel {
 				} )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "lblProcessPath"
+			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
+				"gridx": 1
+				"gridy": 1
 			} )
 			add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
 				name: "tabbedPane1"
@@ -68,20 +74,20 @@ new FormModel {
 				} )
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 1
+				"gridy": 2
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "btnStartProcess"
 				"text": "Start process"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
-				"gridy": 2
+				"gridy": 3
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "btnRefresh"
 				"text": "Aktualisieren"
 			}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 				"gridx": 1
-				"gridy": 2
+				"gridy": 3
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 6, 0 )

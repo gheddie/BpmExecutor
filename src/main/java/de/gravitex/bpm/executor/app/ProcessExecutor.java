@@ -1,6 +1,8 @@
 package de.gravitex.bpm.executor.app;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
@@ -24,6 +26,8 @@ public class ProcessExecutor {
 	
 	private String activity;
 
+	private List<String> pathElements = new ArrayList<String>();
+
 	public ProcessExecutor (BpmDefinition aBpmDefinition) {
 		super();
 		this.bpmDefinition = aBpmDefinition;
@@ -39,5 +43,9 @@ public class ProcessExecutor {
 	
 	public String toString() {
 		return bpmDefinition.getProcessDefinitionKey() + " [ID=" + processInstance.getId() + "]";
+	}
+
+	public void addPathElement(String pathElement) {
+		pathElements.add(pathElement);
 	}
 }

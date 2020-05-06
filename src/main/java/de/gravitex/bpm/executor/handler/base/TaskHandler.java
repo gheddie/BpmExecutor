@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 
+import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 
@@ -15,16 +16,19 @@ public class TaskHandler extends ProcessItemHandler<TaskEntity> {
 	private static final Logger logger = Logger.getLogger(TaskHandler.class);
 	
 	@Override
-	public final void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+	public final void handleLifeCycleBegin(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException {
 		TaskEntity task = castProcessItem(processItem);
 		logger.info("handling life cycle begin of task '"+task.getTaskDefinitionKey()+"'...");
+		ProcessInstance processInstance = processExecutor.getProcessInstance();
 		invokeProcessStateChecker(task, processInstance, ExecutionPhase.BEFORE_PROCESSING);
-		finishTask(processItem, null, processInstance);
+		finishTask(processItem, null, processExecutor);
+		processExecutor.addPathElement(task.getTaskDefinitionKey());
 		invokeProcessStateChecker(task, processInstance, ExecutionPhase.AFTER_PROCESSING);
 	}
 
-	public void finishTask(Object processItem, Map<String, Object> variables, ProcessInstance processInstance) throws BpmExecutorException {
+	public void finishTask(Object processItem, Map<String, Object> variables, ProcessExecutor processExecutor) throws BpmExecutorException {
 		Task task = castProcessItem(processItem);
+		ProcessInstance processInstance = processExecutor.getProcessInstance();
 		try {
 			taskService().complete(task.getId(), variables);
 			String message = "finished task: " + task.getName() + " [ID=" + task.getId() + "]...";
@@ -38,12 +42,12 @@ public class TaskHandler extends ProcessItemHandler<TaskEntity> {
 	}
 
 	@Override
-	public final void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+	public final void handleLifeCycle(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException {
 		// ...
 	}
 
 	@Override
-	public final void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException {
+	public final void handleLifeCycleEnd(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException {
 		// ...
 	}
 

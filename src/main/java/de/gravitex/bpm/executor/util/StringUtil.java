@@ -12,7 +12,7 @@ public class StringUtil {
 		int index = 0;
 		for (String string : aStrings) {
 			result += string;
-			if (index < aStrings.size()) {
+			if (index < aStrings.size() - 1) {
 				result += ",";
 			}
 			index++;

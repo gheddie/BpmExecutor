@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.TaskService;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
+import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import lombok.Data;
@@ -20,11 +21,11 @@ public abstract class ProcessItemHandler<T> {
 
 	protected abstract T castProcessItem(Object processItem);
 	
-	public abstract void handleLifeCycleBegin(Object processItem, ProcessInstance processInstance) throws BpmExecutorException;
+	public abstract void handleLifeCycleBegin(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException;
 
-	public abstract void handleLifeCycle(Object processItem, ProcessInstance processInstance) throws BpmExecutorException;
+	public abstract void handleLifeCycle(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException;
 
-	public abstract void handleLifeCycleEnd(Object processItem, ProcessInstance processInstance) throws BpmExecutorException;
+	public abstract void handleLifeCycleEnd(Object processItem, ProcessExecutor processExecutor) throws BpmExecutorException;
 	
 	// ------------------------------------------------------------------------------------
 	// --------- services
