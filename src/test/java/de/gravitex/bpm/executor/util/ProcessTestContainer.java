@@ -2,10 +2,13 @@ package de.gravitex.bpm.executor.util;
 
 import java.util.List;
 
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+
 import de.gravitex.bpm.executor.app.BpmExecutionSingleton;
 import de.gravitex.bpm.executor.app.BpmnDefinition;
 import de.gravitex.bpm.executor.app.ProcessExecutor;
 import de.gravitex.bpm.executor.app.listener.IProcessExecutionListener;
+import de.gravitex.bpm.executor.enumeration.ExecutionPhase;
 import de.gravitex.bpm.executor.exception.BpmExecutorException;
 import lombok.Data;
 
@@ -60,5 +63,10 @@ public class ProcessTestContainer implements IProcessExecutionListener {
 
 	public List<String> getProcessPath() {
 		return processExecutor.getPathElements();
+	}
+
+	@Override
+	public void itemFinalized(Object processItem, ProcessInstance processInstance, ExecutionPhase executionPhase) {
+		int werner = 5;
 	}
 }

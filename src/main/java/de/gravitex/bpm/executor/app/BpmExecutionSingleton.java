@@ -205,6 +205,9 @@ public class BpmExecutionSingleton implements IProcessEngineListener {
 		} else {
 			logger.info("no bpm state checker found for key '" + itemKey + "'...");
 		}
+		if (processExecutionListener != null) {
+			processExecutionListener.itemFinalized(processItem, processInstance, executionPhase);
+		}
 	}
 
 	public BpmExecutionSingleton registerProcessDefinition(BpmnDefinition bpmnDefinition) {
